@@ -12,7 +12,7 @@
     var edited_at = document.getElementById("edited_at").value;
     var content = document.getElementById("content").value;
     xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", "http://47.100.44.89:5000/input-blog", true);
+    xmlhttp.open("POST", "http://127.0.0.1:5000/input-blog", true);
     xmlhttp.setRequestHeader("Content-type", "application/json");
     xmlhttp.send(JSON.stringify({
       "title": title,
@@ -34,7 +34,7 @@
     <input id="created_at"></input>
     <input id="edited_at"></input>
     <textarea id="content" cols="40" rows="4" style="OVERFLOW:  visible"></textarea></td>
-    <button onclick="sendRequest()">Write Down</button>
+    <button onclick="sendRequest()">Change Ok</button>
     <button onclick="toMD()">TO MD</button>
   </div>
   <div id="foot">--online blog--</div>

@@ -1,25 +1,36 @@
 <!doctype html>
 <html>
 
-<head>blogpage.html
+<head>
   <meta charset="utf-8" />
-  <title>Marked in the browser</title>
+  <title>blog pages</title>
 </head>
 
 <body>
+  <div id="page">
   <div id="header">
-    <h1>BLOG</h1>
+    <h1>page header</h1>
   </div>
-  <div id="content">
-    <h1>Markdown</h1>
+  <div id="blogbody">
+    <div class="blog" id="blogTitle">{{ blogTitle }}</div>
+    <div id="blogCreatedAt">{{ blogCreatedAt }}</div>
+    <div id="blogEditedAt">{{ blogEditedAt }}</div>
+    <div id="blogViewCount">blogViewCount</div>
+    <div id="blogContent">{{blogContent}}</div>
   </div>
-
+  <div id="comment">
+    <h1>comment</h1>
+  </div>
+  <div id="foot">
+    <h1>page foot</h1>
+  </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     var markdown_string = "xx";
 
-    markdown_string = "{{ blog_text }}"
-    document.getElementById('content').innerHTML =
+    markdown_string = "{{ blogContent }}"
+    document.getElementById('blogContent').innerHTML =
       marked(markdown_string);
   </script>
 </body>

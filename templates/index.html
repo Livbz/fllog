@@ -1,0 +1,33 @@
+<html>
+<script>
+    function getBlog(title) {
+        url = "/blogpage?title=" + title + "&key=0812"
+        window.location.href = url;
+    }
+    function search() {
+        var index = document.getElementById("searchInput").value
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "http://47.100.44.89:5000/input-blog", true);
+        xmlhttp.setRequestHeader("Content-type", "application/json");
+        xmlhttp.send();
+    }
+</script>
+
+<body>
+    <div id="page header">
+        <h1>page header</h1>
+    </div>
+    <div>
+        <input id="searchInput"></input><button onclick="search()">search</button>
+    </div>
+    <div id="content">
+        <dl>
+            <dt>2021</dt>
+            <dd><a href="javascript:getBlog('test2')">test2</a></dd>
+            <dt>2020</dt>
+            <dd><a href="javascript:getBlog('test3')">test3</a></dd>
+        </dl>
+    </div>
+</body>
+
+</html>
