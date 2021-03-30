@@ -1,18 +1,5 @@
 <html>
-<script>
-    function getBlog(title) {
-        url = "/blogpage?title=" + title + "&key=0812"
-        window.location.href = url;
-    }
-    function search() {
-        var index = document.getElementById("searchInput").value
-        xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", "http://47.100.44.89:5000/input-blog", true);
-        xmlhttp.setRequestHeader("Content-type", "application/json");
-        xmlhttp.send();
-    }
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <body>
     <div id="page header">
         <h1>page header</h1>
@@ -20,14 +7,46 @@
     <div>
         <input id="searchInput"></input><button onclick="search()">search</button>
     </div>
-    <div id="content">
-        <dl>
-            <dt>2021</dt>
-            <dd><a href="javascript:getBlog('test2')">test2</a></dd>
-            <dt>2020</dt>
-            <dd><a href="javascript:getBlog('test3')">test3</a></dd>
-        </dl>
+    <div id="blog">
+        <h3 id="blogTitle"></h3>
+        <h5 id="createdAt"></h5>
+        <div id='blogContent'>
+            <dl>
+                <dt>2021</dt>
+                <dd><a href="javascript:getBlog('s')">s</a></dd>
+                <dt>2020</dt>
+                <dd><a href="javascript:getBlog('test3')">test3</a></dd>
+            </dl>
+        </div>
     </div>
 </body>
-
+<script>
+    function getBlog(title) {
+        url = "/blogpage?title=" + title  + "&key=0812" + "&search=1"
+        window.location.href = url;
+    }
+    function search() {
+        var blogTitle = document.getElementById("searchInput").value
+        xmlhttp = new XMLHttpRequest();
+        url = "http://127.0.0.1:5000/blogpage?title="  + blogTitle + "&key=0812" + "&search=search"
+        xmlhttp.open("GET", url , true);
+        xmlhttp.setRequestHeader("Content-type", "application/json");
+        xmlhttp.send();
+        xmlhttp.onreadystatechange = function(){
+            // console.log('xmlhttp.readyState', xmlhttp.readyState)
+            console.log(xmlhttp.status)
+            // console.log("xmlhttp.responseText");
+            if (xmlhttp.readyState == 4 && xmlhttp.status ==200 ){
+                console.log(xmlhttp.responseText);
+                responseJSON =  JSON.parse(xmlhttp.responseText)
+                blogContent =  responseJSON.blogContent
+                blogTitle = responseJSON.args_title
+                createdAt = responseJSON.createdAt
+                document.getElementById("blogTitle").innerText = blogTitle;
+                document.getElementById("createdAt").innerText = createdAt;
+                document.getElementById("blogContent").innerHTML = marked(blogContent);
+            }
+        }
+    }
+</script>
 </html>

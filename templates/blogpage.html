@@ -13,10 +13,16 @@
   </div>
   <div id="blogbody">
     <div class="blog" id="blogTitle">{{ blogTitle }}</div>
+    <div class="blog" id="blogTag">{{ tags }}</div>
     <div id="blogCreatedAt">{{ blogCreatedAt }}</div>
-    <div id="blogEditedAt">{{ blogEditedAt }}</div>
     <div id="blogViewCount">blogViewCount</div>
+    <div id="blogEditDiv">
+    <textarea id="blogEdit" cols="40" rows="4" style="OVERFLOW:  visible"></textarea></td>
+    </div>
     <div id="blogContent">{{blogContent}}</div>
+    <div><button onclick="edit()">EDIT</button></div>
+    <div><button onclick="toMD()">ToMD</button></div>
+    <div><button onclick="submit()">Submit</button></div>
   </div>
   <div id="comment">
     <h1>comment</h1>
@@ -27,11 +33,49 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    var markdown_string = "xx";
-
-    markdown_string = "{{ blogContent }}"
+    var markdown_string = "{{ blogContent }}";
+    markdown_string = markdown_string.slice(19,-6)
+    console.log(markdown_string)
     document.getElementById('blogContent').innerHTML =
       marked(markdown_string);
+    // 调出编辑界面
+    function edit() {
+      document.getElementById('blogEdit').value =
+      markdown_string;
+    }
+    function toMD(){
+      console.log('toMD');
+      var toMD_string = document.getElementById('blogEdit').value ;
+      // toMD_string = '# ss'
+      console.log('toMD_string', toMD_string);
+      document.getElementById('blogContent').innerHTML = marked(toMD_string);
+    }
+    // 提交编辑
+    function submit() {
+      var d = new Date();
+      var year = d.getFullYear();
+      var month = d.getMonth() + 1;
+      var day = d.getDay();
+      var date = year + '-' + month + '-' + day;
+      var secretkey = 'pw';
+      var title = document.getElementById("blogTitle").innerText;
+      var tags = document.getElementById("blogTag").innerText;
+      var tagsList = tags.slice(1,-1).split(',')
+      console.log(tagsList);
+      var created_at = document.getElementById("blogCreatedAt").innerText;
+      var edited_at = date;
+      var content = document.getElementById("blogEdit").value;
+      xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("POST", " http://127.0.0.1:5000/input-blog", true);
+      xmlhttp.setRequestHeader("Content-type", "application/json");
+      xmlhttp.send(JSON.stringify({
+        "title": title,
+        "tags": tagsList.join('&'),
+        "created_at": created_at,
+        "blogContent": content,
+        "secretkey": secretkey
+      }));
+    }
   </script>
 </body>
 

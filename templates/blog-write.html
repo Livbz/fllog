@@ -5,14 +5,19 @@
 </head>
 <script>
   function sendRequest() {
+    var d = new Date();
+    var year = d.getFullYear();
+    var month = d.getMonth() + 1;
+    var day = d.getDay();
+    var date = year + '-' + month + '-' + day
     var secretkey = 'pw'
     var title = document.getElementById("title").value;
     var tags = document.getElementById("tags").value;
-    var created_at = document.getElementById("created_at").value;
-    var edited_at = document.getElementById("edited_at").value;
+    var created_at = date;
+    var edited_at = date;
     var content = document.getElementById("content").value;
     xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", "http://47.100.44.89:5000/input-blog", true);
+    xmlhttp.open("POST", " http://127.0.0.1:5000/input-blog", true);
     xmlhttp.setRequestHeader("Content-type", "application/json");
     xmlhttp.send(JSON.stringify({
       "title": title,
@@ -31,8 +36,6 @@
     <input id="title"></input>
     <!--标题-->
     <input id="tags"></input>
-    <input id="created_at"></input>
-    <input id="edited_at"></input>
     <textarea id="content" cols="40" rows="4" style="OVERFLOW:  visible"></textarea></td>
     <button onclick="sendRequest()">Write Down</button>
     <button onclick="toMD()">TO MD</button>
