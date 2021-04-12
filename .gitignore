@@ -134,8 +134,8 @@ dmypy.json
 .env
 *.db
 *.out
-/redis-6.2.1/
-redis-6.2.1/
+# /redis-6.2.1/
+# redis-6.2.1/
 ./oldblogs
 ./blogsTrash
 ./blogs/*
