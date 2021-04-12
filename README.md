@@ -8,3 +8,9 @@ A blog project based on flask, which is created to be a python-friendly and prog
   - Read the blogs 
   - Render markdown online instantly
   - Write blogs on the web and save to the server
+
+2021.03.30
+- Realized features
+  - Edit blog online
+  - Search the title of blogs
+  

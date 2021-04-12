@@ -1,0 +1,86 @@
+<html>
+<head>
+  <title>Blog write</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+</head>
+{% if user=='admin' %}
+<script>
+  function sendRequest() {
+    var d = new Date();
+    var year = d.getFullYear();
+    var month = d.getMonth() + 1;
+    var day = d.getDay();
+    var date = year + '-' + month + '-' + day
+    var secretkey = 'pw'
+    var title = document.getElementById("title").value;
+    var tags = document.getElementById("tags").value;
+    var ifPublic = document.getElementById("ifPublic").innerText;
+    var created_at = date;
+    var edited_at = date;
+    var content = document.getElementById("content").value;
+    xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", " http://127.0.0.1:5000/input-blog", true);
+    xmlhttp.setRequestHeader("Content-type", "application/json");
+    xmlhttp.send(JSON.stringify({
+      "title": title,
+      "tags": tags,
+      "created_at": created_at,
+      "edited_at": edited_at,
+      "blogContent": content,
+      "secretkey": secretkey,
+      "ifPublic":ifPublic,
+    }));
+  }
+
+  function bt_ifpublic(){
+    var ele_ifPublic = document.getElementById('ifPublic');
+    if(ele_ifPublic.innerText == 'Public'){ 
+      ele_ifPublic.innerText = 'Private';
+    }else{
+      ele_ifPublic.innerText = 'Public'; 
+    }
+  }
+</script>
+{% endif %}
+<body>
+  <div id="page" style="margin-left:20% ;">
+  <div id="header"><h1>Blog write</h1></div>
+  {% if user=='admin' %}
+  <div id="body" style="width: 60%;">
+    <input id="title" value="Title"></inp ut>
+    <input id="tags" value="Tags"></input>
+    <button id="ifPublic" onclick="bt_ifpublic()">Public</button>
+    <textarea id="content" cols="40" rows="4" style="OVERFLOW:  visible;width: 80%;height: 200px;"></textarea></td>
+    <br>
+    <button onclick="sendRequest()">Write Down</button>
+    <button onclick="toMD()">TO MD</button>
+  </div>
+  <div id="foot">--online blog--</div>
+  <div>
+    <p id="showmd"></p>
+  </div>
+  </div>
+  <!-- <script  src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> -->
+  <script src="static/js/marked.js"></script>
+  <script>
+    function toMD() {
+      var markdown_string = document.getElementById("content").value;
+      document.getElementById('showmd').innerHTML =
+        marked(markdown_string);
+    }
+  </script>
+  {% else %}
+  <a href='javascript:login()'>登陆</a>
+  <script>
+    function login() {
+    url = "/login"
+    window.location.href = url;
+    }
+    </script>
+  {% endif  %}
+</body>
+
+</html>

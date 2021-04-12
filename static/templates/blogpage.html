@@ -1,0 +1,368 @@
+<!doctype html>
+<html>
+
+<head>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+
+  <meta charset="utf-8" />
+  <title>blog pages</title>
+  <style>
+    a:link{text-decoration: none;color:royalblue}
+    a:hover{color:rgb(252, 95, 56)}
+    a:active{color: rgb(255, 26, 9);}
+
+    button {
+    background-color: white;
+    border: 2px solid black;
+    }
+    button:hover{
+    background-color: rgb(0, 0, 0);
+    border: 2px solid rgb(255, 255, 255);
+    color: white;
+    }
+    button:focus{
+    background-color: rgb(0, 0, 0);
+    border: 2px solid rgb(255, 255, 255);
+    color: white;
+    }
+    #blogTitle{
+      padding: 1px;
+      margin-top: 10px;
+      margin-bottom: 0;
+    }
+    div .commentText {
+      position: relative;
+      top: 7px;
+      background-color: white;
+      white-space: pre-wrap;
+      padding-left: 4px;
+      border: 5px double white;
+      border-radius: 3px;
+    }
+
+    .commentDate {
+      color: #555;
+      font-family: system-ui;
+      position: absolute;
+      left: 20%;
+    }
+
+    div .commentItem {
+      width: 75%;
+      position: relative;
+      left: 10%;
+      background-color: #e0e0e0 !important;
+      padding-left: 10px;
+      padding-top: 10px;
+      padding-bottom: 15.5px;
+      padding-right: 10px;
+      border-color: #071e1f !important;
+      border: 1px solid black;
+      border-radius: 3px;
+    }
+
+    ic {
+      background: #e0e0e0;
+      color: black;
+      padding-right: 5px;
+      padding-left: 6px;
+      border-radius: 4px;
+    }
+
+    code {
+      background: #eee;
+      position: relative;
+      left: 10%;
+      width: 70%;
+      border: 1px solid black;
+      color: #222;
+      page-break-inside: avoid;
+      font-family: 'Microsoft Yahei';
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 1.6em;
+      max-width: 100%;
+      overflow: auto;
+      padding: 0.5em 1.5em;
+      border-radius: 2px;
+      display: block;
+      word-wrap: break-word;
+      border-top: 6px double hsl(0deg 0% 6% / 95%) !important;
+      border-left: 6px double hsl(0deg 0% 6% / 95%) !important;
+      border-bottom: 1px outset hsl(0deg 0% 6% / 95%) !important;
+      border-right: 1px outset hsl(0deg 0% 6% / 95%) !important;
+    }
+
+    .commentUsername {
+      background-color: white;
+      padding-left: 4px;
+      padding-right: 4px;
+      border-radius: 3.2px;
+      border: 1px solid;
+    }
+
+    #blogContent {
+      border-color: #2286de;
+      box-sizing: border-box;
+      padding: 20px;
+      margin-top: 10px;
+      box-shadow: 0 5px 20px 0 rgb(0 0 0 / 20%);
+      border-radius: 10px;
+    }
+    #functionBt{
+      width: auto;
+      float: right;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="page" style="background-color:#888;">
+    <div id="blogblock"
+      style="min-width:500px;padding: 20px;position: relative;left:25%;width: 50%;background-color:white;font: 15px/1.5 'Poppins','PingFang SC','Helvetica Neue',Helvetica,Arial,'Microsoft Yahei','Hiragino Sans GB','Heiti SC','WenQuanYi Micro Hei',sans-serif;">
+      <div id="header">
+        <h1>FLLOG</h1>
+        <hr size=3 color="black">
+        <div id="functionBt">
+        <button id="toIndex" onclick="toIndex()">归档</button>
+        <button id="about" onclick="about()">关于</button>
+        <button id="photo" onclick="photo()">相册</button>
+        </div>
+        {% if user != 'admin' %}
+        <button onclick="login()">Login</button>
+        {% endif %}
+      </div>
+      <div id='operation'>
+        {% if user == 'admin' %}
+        <!-- <button onclick="edit()">EDIT</button>
+        <button onclick="toMD()">ToMD</button>
+        <button id="ifPublic" onclick="Public()">Public</button>
+        <button onclick="submit()">Submit</button> -->
+        {% endif %}
+      </div>
+      <div id="blogbody">
+        <div class="blog" id="blogTitle">
+          <h2 id="blogTitle">{{ blogTitle }}</h2>
+        </div>
+        <div>
+        <span class="blog" id="blogTag">{{ tags }}</span><br>
+        <span id="blogCreatedAt" style="color:dimgray">创建: {{ blogCreatedAt }}</span>
+        <span id="blogEditedAt" style="color:dimgray">修改: {{ blogEditedAt }}</span>
+        <span id="blogViewCount" style="color:dimgray">访问量：{{ blogViewCount }}</span>
+        </div>
+        {% if user == 'admin' %}
+        <div id="blogEditDiv">
+          <textarea id="blogEdit" cols="40" rows="4" style="display: none; OVERFLOW:  visible"></textarea></td>
+          {% endif %}
+        </div>
+        <div id="blogContent">{{blogContent}}</div>
+
+      </div>
+      <div id="comment">
+        <h1>comments</h1>
+        <button id='commentButton' onclick="showComments()">查看评论</button>
+        <div id="commentContent" style="display: block;">
+          <!-- <span>username</span> <span>date</span><br>
+      <span>comments</span> -->
+        </div>
+        <div id='newComment' style="display: none;">
+          <input id="username"><br>
+          <textarea id="usertext"></textarea>
+          <button id="upComm" onclick="upComm()">ok</button>
+        </div>
+        <br>
+        <div id='outBtNewComm'>
+          <button id='btNewComment' style="display: none;" onclick="showEditCom()">输入评论</button>
+        </div>
+      </div>
+      <div id="page foot">
+        <span>Powered by Flask</span>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    // import marked from 'marked';
+    const renderer = new marked.Renderer();
+    renderer.code = function (href, title, text) {
+      return '<img src="' + imageLink + '" alt="' + title + '"/><div class="desc">' + title + '</div>';
+    };
+    function Public() {
+      let ele = document.getElementById("ifPublic");
+      if (ele.innerText != 'Private') {
+        ele.innerText = 'Private';
+      } else {
+        ele.innerText = 'Public';
+      }
+    }
+    function login() {
+      url = "/login";
+      window.location.href = url;
+    }
+    // var markdown_string = "{{ blogContent }}";
+    var markdown_string = document.getElementById('blogContent').innerText;
+    markdown_string = JSON.parse(markdown_string);
+    markdown_string = markdown_string['1'];
+    document.getElementById('blogContent').innerText = markdown_string;
+    // document.getElementById('blogContent').innerText = markdown_string;
+    // markdown_string = markdown_string.slice(19,-6);
+    // markdown_string = markdown_string.replace(/&#39;/g,"\'");
+    // console.log(markdown_string);
+    // // console.log(markdown_string)
+    document.getElementById('blogContent').innerHTML =
+      marked(markdown_string);
+      function toIndex(){
+        url = "/index";
+        window.location.href = url;
+    }
+    // 调出编辑界面
+    function edit() {
+      var textarea = document.getElementById('blogEdit');
+      textarea.style.display = 'inline';
+      document.getElementById('blogEdit').value = markdown_string;
+    }
+
+    function toMD() {
+      // console.log('toMD');
+      var toMD_string = document.getElementById('blogEdit').value;
+      // toMD_string = '# ss'
+      // console.log('toMD_string', toMD_string);
+      document.getElementById('blogContent').innerHTML = marked(toMD_string);
+    }
+
+    function submit() {
+      var d = new Date();
+      var year = d.getFullYear();
+      var month = d.getMonth() + 1;
+      var day = d.getDay();
+      var date = year + '-' + month + '-' + day;
+      var secretkey = 'pw';
+      var ifPublic = document.getElementById("ifPublic").innerText;
+      var title = document.getElementById("blogTitle").innerText;
+      var tags = document.getElementById("blogTag").innerText;
+      var tagsList = tags.slice(1, -1).split(',')
+      // console.log(tagsList);
+      var created_at = document.getElementById("blogCreatedAt").innerText;
+      var edited_at = date;
+      var content = document.getElementById("blogEdit").value;
+      xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("POST", " http://127.0.0.1:5000/edit-blog", true);
+      xmlhttp.setRequestHeader("Content-type", "application/json");
+      xmlhttp.send(JSON.stringify({
+        "ifPublic": ifPublic,
+        "title": title,
+        "tags": tagsList.join('&'),
+        "created_at": created_at,
+        "blogContent": content,
+        "secretkey": secretkey
+      }));
+    }
+    var totalComm = 0;
+    var commentsAll = '';
+    function getcomments() {
+      // commentsAll = '';
+      var title = document.getElementById("blogTitle").innerText;
+      xmlhttp = new XMLHttpRequest();
+      url = "http://127.0.0.1:5000/getcomments?blogtitle=" + title;
+      xmlhttp.open("GET", url, true);
+      xmlhttp.setRequestHeader("Content-type", "application/json");
+      xmlhttp.send();
+      xmlhttp.onreadystatechange = function () {
+        // console.log('xmlhttp.readyState', xmlhttp.readyState)
+        console.log(xmlhttp.status)
+        // console.log("xmlhttp.responseText");
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+          // console.log(xmlhttp.responseText);
+          responseJSON = JSON.parse(xmlhttp.responseText);
+          console.log(responseJSON.length);
+          console.log(responseJSON);
+          totalComm = responseJSON.length;
+          for (let index = 0; index < responseJSON.length; index++) {
+            username = responseJSON[index][2];
+            date = responseJSON[index][3];
+            usertext = responseJSON[index][4];
+            item_comment = '<div class="commentItem">' + '<span class="commentUsername">' + username + '</span> <span  class="commentDate">' + date + '</span><br><div class="commentText"><span>' + usertext + '</span></div></div><br>';
+            commentsAll += item_comment;
+          }
+          if (totalComm == 0) {
+            document.getElementById('commentButton').innerText = "发表第一条评论";
+          } else {
+            document.getElementById('commentButton').innerText = "共有" + totalComm + '条评论';
+          }
+        }
+      }
+
+    }
+    getcomments();
+
+    var comment = '';
+    var btOutHTML = '';
+    var newCommentDiv = '';
+    function showComments() {
+      console.log('commentsAll——————', commentsAll);
+      document.getElementById('commentContent').innerHTML = commentsAll;
+      var commentContent = document.getElementById('commentContent');
+      var commentButton = document.getElementById('commentButton');
+      var btNewComment = document.getElementById('btNewComment');
+      if (btNewComment) {
+        btNewComment.style.display = 'block';
+      }
+      if (document.getElementById('outBtNewComm').innerHTML != '') {
+        btOutHTML = document.getElementById('outBtNewComm').innerHTML;
+      }
+      if (document.getElementById('newComment').innerHTML != '') {
+        newCommentDiv = document.getElementById('newComment').innerHTML;
+      }
+      if (commentButton.innerText != '隐藏') {
+        if (commentContent) {
+          commentContent.innerHTML = commentsAll;
+        }
+        commentButton.innerText = '隐藏';
+        if (commentContent.innerHTML != '') {
+          comment = commentsAll;
+        }
+        else {
+          console.log('comment', comment);
+          commentContent.innerHTML = commentsAll;
+        }
+        console.log('btOutHTML', btOutHTML);
+        document.getElementById('outBtNewComm').innerHTML = btOutHTML;
+      } else {
+        document.getElementById('newComment').innerHTML = '';
+        if (totalComm == 0) {
+          commentButton.innerText = '发表第一条评论';
+          commentContent.innerHTML = '';
+          document.getElementById('outBtNewComm').innerHTML = '';
+        } else {
+          document.getElementById('outBtNewComm').innerHTML = '';
+          commentButton.innerText = '共有' + totalComm + '条评论';
+          commentContent.innerHTML = '';
+        }
+      }
+    }
+
+    function showEditCom() {
+      var editComBox = document.getElementById('newComment');
+      editComBox.style.display = 'block';
+      document.getElementById('newComment').innerHTML = newCommentDiv;
+    }
+    function upComm() {
+      var title = document.getElementById("blogTitle").innerText;
+      var username = document.getElementById('username').value;
+      var usertext = document.getElementById('usertext').value;
+      xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("POST", " http://127.0.0.1:5000/newcomment", true);
+      xmlhttp.setRequestHeader("Content-type", "application/json");
+      xmlhttp.send(JSON.stringify({
+        "title": title,
+        "username": username,
+        "usertext": usertext,
+      }));
+    }
+  </script>
+</body>
+
+</html>

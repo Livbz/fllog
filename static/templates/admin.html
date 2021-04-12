@@ -1,0 +1,26 @@
+<!doctype html>
+<title>Hello from Flask</title>
+{% if user=='admin' %}
+<h1>Hello!</h1>
+<h1>My site</h1>
+<h1><a href="javascript:redirect('index')">blogs index</a></h1>
+<h1><a href="javascript:redirect('write')">blogs write</a></h1>
+<h1>后台数据展示界面</h1>
+<div>
+  <h2>This is my blog</h2>
+</div>
+{% endif %}
+<dd><a >test3</a></dd>
+<script>
+document.cookie="secretKey={{ cookie }}";
+function redirect(endpoint) {
+  if (endpoint =='index'){
+    url = "/index"
+    window.location.href = url;
+  }
+  if (endpoint =='write'){
+    url = "/writeblog"
+    window.location.href = url;
+  }
+}
+</script>
