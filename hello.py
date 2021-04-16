@@ -83,8 +83,8 @@ def index():
     year_set = set()
     year_list = list()
     for item in UTC_Title_List:
-        if item[1][1] == '0':
-            continue
+        # if item[1][1] == '0':
+        #     continue
         date = datetime.datetime.fromtimestamp(int(item[0]))
         date = str(date).split(' ')[0]
         year = date.split('-')[0]
@@ -200,7 +200,7 @@ def blogpage():
             blogContent = {
                 '1': blogContent,
             }
-        if blogArgs_Dict.get('ifPublic') == '1':
+        if blogArgs_Dict.get('ifPublic') == '1' or request.cookies.get('secretKey') == session['secretKey']:
                 return render_template('blogpage.html',
                                        user=user,
                                        blogTitle=args_title,
@@ -210,6 +210,7 @@ def blogpage():
                                        blogViewCount=redis_link.scard(
                                            args_title),
                                        blogContent=json.dumps(blogContent, ensure_ascii=False))
+        return 'PERMISSION DENIE.'
     else:
         return 'NO RESULT.'
 
