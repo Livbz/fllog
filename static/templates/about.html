@@ -1,15 +1,143 @@
 <!doctype html>
 <html>
+
 <head>
-  <meta charset="utf-8"/>
+  <meta charset="utf-8" />
   <title>Marked in the browser</title>
+  <style>
+    @font-face {
+      font-family: 'KalamLight';
+      src: url('/static/font/Kalam/Kalam-Light.ttf');
+    }
+
+    @font-face {
+      font-family: 'KalamRegular';
+      src: url('/static/font/Kalam/Kalam-Regular.ttf');
+    }
+
+    @font-face {
+      font-family: 'NotoSerifLight';
+      src: url('/static/font/Noto_Serif_SC/NotoSerifSC-Light.otf');
+    }
+
+    @font-face {
+      font-family: 'Mali';
+      src: url('/static/font/Mali/Mali-Italic.ttf');
+    }
+
+    html,
+    body {
+      background-color: #888;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    #page {
+      background-color: #888;
+      height: 100%;
+      padding: 32px;
+      font-family: 'Mali';
+    }
+
+    .blogblock {
+      min-width: 500px;
+      padding: 20px;
+      position: relative;
+      left: 25%;
+      width: 50%;
+      background-color: white;
+      font: 15.4px/1.5 'Mali', 'NotoSerifLight', serif;
+    }
+
+    .pageblock {
+      min-width: 500px;
+      padding: 20px;
+      position: relative;
+      left: 25%;
+      width: 50%;
+      background-color: white;
+      font: 15.4px/1.5 'Mali', 'NotoSerifLight', serif;
+    }
+    #functionBt {
+      width: auto;
+      float: right;
+    }
+    #pagefoot {
+      position: relative;
+      top: 3vh;
+    }
+    button {
+      font-family: 'KalamLight', 'NotoSerifLight', serif;
+      line-height: 13px;
+      padding-top: 3px;
+      background-color: white;
+      border: 2px solid #555;
+      border-radius: 3px;
+    }
+
+    button:hover {
+      background-color: rgb(0, 0, 0);
+      border: 2px solid rgb(255, 255, 255);
+      color: white;
+      outline: none;
+    }
+
+    button:focus {
+      background-color: rgb(0, 0, 0);
+      border: 2px solid rgb(255, 255, 255);
+      color: white;
+      outline: none;
+    }
+    button:active {
+      border: 2px solid rgb(255, 255, 255);
+      color: white;
+      outline: none;
+    }
+    #about {
+    background-color: rgb(0, 0, 0);
+    border: 2px solid rgb(0, 0, 0);
+    color: white;
+}
+  </style>
 </head>
+
 <body>
-  <div id="content"></div>
+  <div id="page">
+    <div class="blogblock" id="blogblock">
+      <div id="header">
+        <h1><a href="/index" style="text-decoration: none;color: #333">FLLOG</a></h1>
+        <hr size=3 color="black">
+        <div id="functionBt">
+          <button  id="toIndex" onclick="location='/index'">归档</button>
+          <button id="about" onclick="location='/about'">关于</button>
+          <!-- <button id="photo" onclick="location='/photo'">相册</button> -->
+        </div>
+        <div id="content">
+        </div>
+      </div>
+    </div>
+    <div class="pageblock" id="pagefoot">
+      <span>Powered by Flask</span>
+    </div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    document.getElementById('content').innerHTML =
-      marked('# Marked in the browser\n\nRendered by **marked**.');
+    function contentToMD(){
+      var ele = document.getElementById('content');
+      rawText = '## About this blog\n\
+### 后端\n\
+基于Python的Flask框架实现(所以叫Fllog)，数据库使用PostgreSQL和Redis分别实现评论和浏览量统计功能，博客内容通过文档管理\n\
+### 前端\n\
+未使用框架，由HTML、CSS和原生JavaScript实现\n\n\
+前后端通信分别由JavaScript的AJAX和Python的Requests库实现';
+      ele.innerHTML = marked(rawText);
+    }
+    contentToMD()
+    // document.getElementById('content').innerHTML =
+    //   marked('# Marked in the browser\n\nRendered by **marked**.');
   </script>
 </body>
+
 </html>

@@ -7,6 +7,30 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
 </head>
 {% if user=='admin' %}
+<style>
+      @font-face {
+        font-family: 'KalamLight';
+        src: url('/static/font/Kalam/Kalam-Light.ttf');
+    }
+    @font-face {
+        font-family: 'KalamRegular';
+        src: url('/static/font/Kalam/Kalam-Regular.ttf');
+    }
+    @font-face {
+        font-family: 'NotoSerifLight';
+        src: url('/static/font/Noto_Serif_SC/NotoSerifSC-Light.otf');
+    }
+ * {
+  font-family:  'KalamLight', 'NotoSerifLight', serif;
+ }
+ html, body{
+      width: 100%;
+      height:auto;
+      margin: 0;
+      padding: 0;
+      background-color: #777;
+    }
+</style>
 <script>
   function sendRequest() {
     var d = new Date();

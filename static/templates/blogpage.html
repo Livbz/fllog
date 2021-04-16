@@ -3,35 +3,96 @@
 
 <head>
   <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet"> -->
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300&display=swap" rel="stylesheet"> -->
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Kalam&family=Noto+Serif+SC:wght@300&display=swap" rel="stylesheet"> -->
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300&family=Noto+Serif+SC:wght@300&family=Roboto:wght@300&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
 
   <meta charset="utf-8" />
   <title>blog pages</title>
   <style>
-    a:link{text-decoration: none;color:royalblue}
-    a:hover{color:rgb(252, 95, 56)}
-    a:active{color: rgb(255, 26, 9);}
+    @font-face {
+        font-family: 'KalamLight';
+        src: url('/static/font/Kalam/Kalam-Light.ttf');
+    }
+    @font-face {
+        font-family: 'KalamRegular';
+        src: url('/static/font/Kalam/Kalam-Regular.ttf');
+    }
+    @font-face {
+        font-family: 'NotoSerifLight';
+        src: url('/static/font/Noto_Serif_SC/NotoSerifSC-Light.otf');
+    }
+    @font-face {
+      font-family: 'Mali';
+      src: url('/static/font/Mali/Mali-Italic.ttf');
+    }
+    html, body{
+      width: 100%;
+      height:auto;
+      margin: 0;
+      padding: 0;
+      background-color: #888;
+    }
+
+    a:link {
+      text-decoration: none;
+      color: royalblue
+    }
+
+    a:hover {
+      color: rgb(252, 95, 56)
+    }
+
+    a:active {
+      color: rgb(255, 26, 9);
+    }
 
     button {
-    background-color: white;
-    border: 2px solid black;
+      font-family: 'KalamLight', 'NotoSerifLight', serif;
+      line-height: 13px;
+      padding-top: 3px;
+      background-color: white;
+      border: 2px solid #555;
+      border-radius: 3px;
     }
-    button:hover{
-    background-color: rgb(0, 0, 0);
-    border: 2px solid rgb(255, 255, 255);
-    color: white;
+
+    button:hover {
+      background-color: rgb(0, 0, 0);
+      border: 2px solid rgb(255, 255, 255);
+      color: white;
+      outline: none;
     }
-    button:focus{
-    background-color: rgb(0, 0, 0);
-    border: 2px solid rgb(255, 255, 255);
-    color: white;
+
+    button:focus {
+      background-color: rgb(0, 0, 0);
+      border: 2px solid rgb(255, 255, 255);
+      color: white;
+      outline: none;
     }
-    #blogTitle{
+    button:active {
+      border: 2px solid rgb(255, 255, 255);
+      color: white;
+      outline: none;
+    }
+    #page {
+      background-color: #888;
+      height: 100%;
+      padding: 32px;
+      font-family: 'Mali';
+    }
+
+    #blogTitle {
       padding: 1px;
       margin-top: 10px;
       margin-bottom: 0;
+    }
+
+    #usertext {
+      width: 80%;
+      height: 40%;
     }
     div .commentText {
       position: relative;
@@ -48,6 +109,10 @@
       font-family: system-ui;
       position: absolute;
       left: 20%;
+    }
+    .codehearderBt:active {
+      background-color: aliceblue;
+    
     }
 
     div .commentItem {
@@ -70,30 +135,27 @@
       padding-right: 5px;
       padding-left: 6px;
       border-radius: 4px;
+      font-family: 'Roboto';
     }
 
     code {
-      background: #eee;
-      position: relative;
-      left: 10%;
-      width: 70%;
-      border: 1px solid black;
-      color: #222;
-      page-break-inside: avoid;
-      font-family: 'Microsoft Yahei';
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 1.6em;
-      max-width: 100%;
-      overflow: auto;
-      padding: 0.5em 1.5em;
-      border-radius: 2px;
-      display: block;
-      word-wrap: break-word;
-      border-top: 6px double hsl(0deg 0% 6% / 95%) !important;
-      border-left: 6px double hsl(0deg 0% 6% / 95%) !important;
-      border-bottom: 1px outset hsl(0deg 0% 6% / 95%) !important;
-      border-right: 1px outset hsl(0deg 0% 6% / 95%) !important;
+    background: #eee;
+    position: relative;
+    left: 10%;
+    width: 70%;
+    color: #555;
+    page-break-inside: avoid;
+    font-family: 'Robote';
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 1.6em;
+    max-width: 100%;
+    overflow: auto;
+    border-radius: 3px;
+    display: block;
+    word-wrap: break-word;
+    border-bottom: 0;
+    box-shadow: -5px -4px 7px 0px rgb(0 0 0 / 20%);
     }
 
     .commentUsername {
@@ -104,6 +166,23 @@
       border: 1px solid;
     }
 
+    .blogblock {
+      min-width: 500px;
+      padding: 20px;
+      position: relative;
+      left: 25%;
+      width: 50%;
+      background-color: white;
+      font: 15.4px/1.5 'Mali', 'NotoSerifLight', serif;
+    }
+    #comment {
+      font: 15px/1.5 'Mali', 'NotoSerifLight', serif;
+    }
+
+    #pagefoot{
+      position: relative;
+        top: 3vh;
+    }
     #blogContent {
       border-color: #2286de;
       box-sizing: border-box;
@@ -112,7 +191,14 @@
       box-shadow: 0 5px 20px 0 rgb(0 0 0 / 20%);
       border-radius: 10px;
     }
-    #functionBt{
+    #CommentsID {
+    border: 2px solid #555;
+    margin-right: 3px;
+    border-radius: 3px;
+    font-size: 13px;
+    line-height: 14px;
+    }
+    #functionBt {
       width: auto;
       float: right;
     }
@@ -120,16 +206,15 @@
 </head>
 
 <body>
-  <div id="page" style="background-color:#888;">
-    <div id="blogblock"
-      style="min-width:500px;padding: 20px;position: relative;left:25%;width: 50%;background-color:white;font: 15px/1.5 'Poppins','PingFang SC','Helvetica Neue',Helvetica,Arial,'Microsoft Yahei','Hiragino Sans GB','Heiti SC','WenQuanYi Micro Hei',sans-serif;">
+  <div id="page">
+    <div class="blogblock" id="blogblock">
       <div id="header">
-        <h1>FLLOG</h1>
+        <h1><a href="/index" style="text-decoration: none;color: #333">FLLOG</a></h1>
         <hr size=3 color="black">
         <div id="functionBt">
-        <button id="toIndex" onclick="toIndex()">归档</button>
-        <button id="about" onclick="about()">关于</button>
-        <button id="photo" onclick="photo()">相册</button>
+          <button  id="toIndex" onclick="location='/index'">归档</button>
+          <button id="about" onclick="location='/about'">关于</button>
+          <!-- <button id="photo" onclick="location='/photo'">相册</button> -->
         </div>
         {% if user != 'admin' %}
         <button onclick="login()">Login</button>
@@ -137,10 +222,10 @@
       </div>
       <div id='operation'>
         {% if user == 'admin' %}
-        <!-- <button onclick="edit()">EDIT</button>
+        <button onclick="edit()">EDIT</button>
         <button onclick="toMD()">ToMD</button>
         <button id="ifPublic" onclick="Public()">Public</button>
-        <button onclick="submit()">Submit</button> -->
+        <button onclick="submit()">Submit</button>
         {% endif %}
       </div>
       <div id="blogbody">
@@ -148,29 +233,32 @@
           <h2 id="blogTitle">{{ blogTitle }}</h2>
         </div>
         <div>
-        <span class="blog" id="blogTag">{{ tags }}</span><br>
-        <span id="blogCreatedAt" style="color:dimgray">创建: {{ blogCreatedAt }}</span>
-        <span id="blogEditedAt" style="color:dimgray">修改: {{ blogEditedAt }}</span>
-        <span id="blogViewCount" style="color:dimgray">访问量：{{ blogViewCount }}</span>
+          <span class="blog" id="blogTag">{{ tags }}</span><br>
+          <span id="blogCreatedAt" style="color:dimgray">创建: {{ blogCreatedAt }}</span>
+          <span id="blogEditedAt" style="color:dimgray">修改: {{ blogEditedAt }}</span>
+          <span id="blogViewCount" style="color:dimgray">访问量：{{ blogViewCount }}</span>
         </div>
         {% if user == 'admin' %}
         <div id="blogEditDiv">
-          <textarea id="blogEdit" cols="40" rows="4" style="display: none; OVERFLOW:  visible"></textarea></td>
-          {% endif %}
+          <textarea id="blogEdit" cols="40" rows="4" style="width:100%;height: 30vh; display: none; OVERFLOW:  visible"></textarea></td>
         </div>
+        {% endif %}
         <div id="blogContent">{{blogContent}}</div>
 
       </div>
       <div id="comment">
         <h1>comments</h1>
+        {% if user == 'admin' %}
+        <div id="manageComments">
+          <span id="CommentsID">点击选择待隐藏评论</span><button onclick="changeCommentStatus()">隐藏该评论</button>
+        </div>
+        {% endif %}
         <button id='commentButton' onclick="showComments()">查看评论</button>
         <div id="commentContent" style="display: block;">
-          <!-- <span>username</span> <span>date</span><br>
-      <span>comments</span> -->
         </div>
         <div id='newComment' style="display: none;">
-          <input id="username"><br>
-          <textarea id="usertext"></textarea>
+          <input id="username" style='font-family: NotoSerifLight' value="用户名/邮箱/联系方式" onfocus="if(value=='用户名/邮箱/联系方式'){value=''}" onblur="if(value==''){value='用户名/邮箱/联系方式'}"><br>
+          <textarea id="usertext" style='font-family: NotoSerifLight'></textarea>
           <button id="upComm" onclick="upComm()">ok</button>
         </div>
         <br>
@@ -178,14 +266,61 @@
           <button id='btNewComment' style="display: none;" onclick="showEditCom()">输入评论</button>
         </div>
       </div>
-      <div id="page foot">
-        <span>Powered by Flask</span>
-      </div>
+
     </div>
+    <div class="blogblock" id="pagefoot">
+      <span>Powered by Flask</span>
+    </div>
+    <!-- <div style="top:3vh;position: relative;">take</div> -->
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     // import marked from 'marked';
+    
+    function changeCommentStatus(){
+      var ele = document.getElementById('CommentsID');
+      const commentID = ele.innerText.split(':')[1];
+      console.log(commentID);
+      if(commentID){
+        xmlhttp = new XMLHttpRequest();
+        url = "http://127.0.0.1:5000/managecomment?id=" + commentID;
+        xmlhttp.open("GET", url, true);
+        xmlhttp.setRequestHeader("Content-type", "application/json");
+        xmlhttp.send();
+        xmlhttp.onreadystatechange = function () {
+          console.log(xmlhttp.status)
+          if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            location.reload();
+          }
+        }
+      }
+    }
+
+    function addCodeHeader(){
+      var eleCode = document.getElementsByTagName('code');
+      for (var i = 0; i < eleCode.length; i++) {
+        var addCodeHeader = '';
+        var markEachLine ='';
+        var codeText = eleCode[i].innerText;
+        codeText = codeText.split('\n');
+        for (let index = 0; index < codeText.length; index++) {
+          const element = codeText[index];
+          var linecode = '<tr><td style="text-align: center;padding-right: 6px;padding-left: 3px;color: gray;border-right: 1px solid rgb(190, 190, 190);line-height: 16px;" class=" line-number">'+index.toString()+'</td><td style="line-height: 16px;" class="blob-code">' + element + '</td></tr>';
+          console.log('index&element: ',index,element);
+          // linecode.replace(/index/, index);
+          // linecode.replace(/element/, element);
+          markEachLine += linecode; 
+        }
+        console.log(markEachLine);
+        const svgIcon ='<a href="https://github.com/"><svg style="float: left;padding: 2px;" class="svgIcon" height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill="white" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg></a>'
+        const codeHeader ="<div style='background-color: #646464;text-align: center;'>"+svgIcon+"<span style='color: #eee;line-height: 10px;font-size: 18px; font-family: KalamRegular;'>Show you my code</span><button class='codehearderBt' onclick='copy(this)'  style='color: white;float: right;border: 1px solid #f5f5f5;margin-top: 2px;margin-right: 2px;border-radius: 3px;line-height: 14px;background-color: #646464; line-height: 12px;'>copy</button></div>";
+        var addCodeHeader = '<div>' + codeHeader + '<table><tbody>' + markEachLine + "</table></tbody></div>";
+        console.log(addCodeHeader);
+        eleCode[i].innerHTML = addCodeHeader;
+      }
+    }
+    
     const renderer = new marked.Renderer();
     renderer.code = function (href, title, text) {
       return '<img src="' + imageLink + '" alt="' + title + '"/><div class="desc">' + title + '</div>';
@@ -202,6 +337,10 @@
       url = "/login";
       window.location.href = url;
     }
+    function copy(e){
+      e.style.color = '#555';
+      e.style.backgroundColor = 'white';
+    }
     // var markdown_string = "{{ blogContent }}";
     var markdown_string = document.getElementById('blogContent').innerText;
     markdown_string = JSON.parse(markdown_string);
@@ -214,15 +353,23 @@
     // // console.log(markdown_string)
     document.getElementById('blogContent').innerHTML =
       marked(markdown_string);
-      function toIndex(){
-        url = "/index";
-        window.location.href = url;
+    function toIndex() {
+      url = "/index";
+      window.location.href = url;
     }
     // 调出编辑界面
     function edit() {
       var textarea = document.getElementById('blogEdit');
       textarea.style.display = 'inline';
       document.getElementById('blogEdit').value = markdown_string;
+    }
+
+    function getCommentID(){
+      console.log('click');
+      // var ele = getElementById('deletCommID');
+      // // ele.value = e.id;
+      // console.log('click');
+      // e.color = 'red';
     }
 
     function toMD() {
@@ -244,7 +391,6 @@
       var title = document.getElementById("blogTitle").innerText;
       var tags = document.getElementById("blogTag").innerText;
       var tagsList = tags.slice(1, -1).split(',')
-      // console.log(tagsList);
       var created_at = document.getElementById("blogCreatedAt").innerText;
       var edited_at = date;
       var content = document.getElementById("blogEdit").value;
@@ -260,10 +406,10 @@
         "secretkey": secretkey
       }));
     }
+    
     var totalComm = 0;
     var commentsAll = '';
     function getcomments() {
-      // commentsAll = '';
       var title = document.getElementById("blogTitle").innerText;
       xmlhttp = new XMLHttpRequest();
       url = "http://127.0.0.1:5000/getcomments?blogtitle=" + title;
@@ -271,21 +417,23 @@
       xmlhttp.setRequestHeader("Content-type", "application/json");
       xmlhttp.send();
       xmlhttp.onreadystatechange = function () {
-        // console.log('xmlhttp.readyState', xmlhttp.readyState)
         console.log(xmlhttp.status)
-        // console.log("xmlhttp.responseText");
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-          // console.log(xmlhttp.responseText);
           responseJSON = JSON.parse(xmlhttp.responseText);
           console.log(responseJSON.length);
           console.log(responseJSON);
           totalComm = responseJSON.length;
           for (let index = 0; index < responseJSON.length; index++) {
-            username = responseJSON[index][2];
-            date = responseJSON[index][3];
-            usertext = responseJSON[index][4];
-            item_comment = '<div class="commentItem">' + '<span class="commentUsername">' + username + '</span> <span  class="commentDate">' + date + '</span><br><div class="commentText"><span>' + usertext + '</span></div></div><br>';
+            const show = responseJSON[index][1];
+            console.log(show);
+            if(show == true){
+            commID =  responseJSON[index][0];
+            username = responseJSON[index][3];
+            date = responseJSON[index][4];
+            usertext = responseJSON[index][5];
+            item_comment = '<div class="commentItem"  id="'+ commID +'" style="cursor: pointer;" onclick="var ele = getElementById(\'CommentsID\'); ele.innerText=\'指定评论已标红 id:\'+this.id; ele.style.borderColor=\'#ff4244\';this.style.color=\'#ff4c33\'">' + '<span  class=\"commentUsername\">' + username + '</span> <span  class=\"commentDate\">' + date + '</span><br><div class=\"commentText\"><span>' + usertext + '</span></div></div><br>';
             commentsAll += item_comment;
+          }
           }
           if (totalComm == 0) {
             document.getElementById('commentButton').innerText = "发表第一条评论";
@@ -294,16 +442,20 @@
           }
         }
       }
-
     }
     getcomments();
-
     var comment = '';
     var btOutHTML = '';
     var newCommentDiv = '';
     function showComments() {
       console.log('commentsAll——————', commentsAll);
       document.getElementById('commentContent').innerHTML = commentsAll;
+      // var x = document.getElementsByClassName("commentItem");
+      // for (var i = 0; i < x.length; i++) {
+      //   x[i].onclick = function(){
+      //     console.log('click!');
+      //   }
+      // }
       var commentContent = document.getElementById('commentContent');
       var commentButton = document.getElementById('commentButton');
       var btNewComment = document.getElementById('btNewComment');
@@ -361,7 +513,9 @@
         "username": username,
         "usertext": usertext,
       }));
+      location.reload();
     }
+    addCodeHeader();
   </script>
 </body>
 
