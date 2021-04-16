@@ -72,15 +72,12 @@ def url_redirect():
 @app.route('/index')
 def index():
     secret_key = request.cookies.get('secretKey')
-    if session.get('secretKey') == secret_key:
-        print('correspond!')
     get_Args = request.args
     userID = get_Args.get('userID')
     if session.get(userID) == True:
         user = 'admin'
     else:
         user = 'visitor'
-# if get_Args.get('Mode') == None:
     UTC_Title_List = get_bloglist('time_series')
     blogs_index = '<div id="indexList">'
     year_set = set()
@@ -93,7 +90,7 @@ def index():
         year = date.split('-')[0]
         date = date[5:]
         title = item[1][0]
-        if year not in year_set:  # 说明是新的一年了
+        if year not in year_set:
             year_set.add(year)
             year_list.append(year)
             segment_year = f"<div class='yearOrTag'><h3 class='yearOrTagH3'>{year}<h3><hr align='left' width='85%'></div>"
@@ -105,7 +102,6 @@ def index():
     blogs_index = blogs_index + '</div>'
     blogs_index_tag = "<div id='indexList'>"
     tag_title_list = get_bloglist('tag_series')
-    print('tag_title_list\n', tag_title_list)
     for tag in tag_title_list:
         blogs_index_tag += f"<div class='yearOrTag'><h3  class='yearOrTagH3'>{tag} ➜ <h3></div>"
         for item in tag_title_list[tag]:
@@ -127,7 +123,6 @@ def hello():
         user = 'admin'
     else:
         user = 'visitozzzr'
-    print(user)
     return render_template('hello.html', cookie=secretKey)
 
 
@@ -147,30 +142,18 @@ def admin():
 def login():
     if request.method == 'POST':
         secret_key = str(uuid.uuid4())
-        print(secret_key)
         if PASSWD == request.form['passwd']:
             session['secretKey'] = secret_key
-            return render_template('hello.html', cookie=secret_key)
+            return render_template('hello.html',cookie=secret_key)
         else:
-            return '''
-                <form method="post">
-                    <p><input type=text name=passwd>
-                    <p><input type=submit value=Login>
-                </form>
-            '''
+            return render_template('login.html')
     else:
-        return '''
-            <form method="post">
-                <p><input type=text name=passwd>
-                <p><input type=submit value=Login>
-            </form>
-        '''
+        return render_template('login.html')
 
 
 @app.route('/logout')
 def logout():
-    # remove the username from the session if it's there
-    session.pop('username', None)
+    session.pop('secretKey', None)
     return redirect(url_for('index'))
 
 
@@ -179,85 +162,22 @@ def about():
     return render_template('about.html')
 
 
-# @app.route('/bloglist')
-# def bloglist(user='visitor'):
-#     get_Args = request.args
-#     if get_Args.get('tag') == 'tag':
-#         args_tag = 1
-#     else:
-#         args_tag = 0
-#     if get_Args.get('timeseries') == 'timeseries':
-#         args_time = 1
-#     else:
-#         args_time = 0
-#     # 获取博客列表
-#     filepathList = glob.glob(f'{CURENT_PATH}/blogs/*.md')
-#     bloglist = get_bloglist('title_info')
-#     if args_time == 1 and args_tag == 0:
-#         bloglist_time = dict()  # { 'date'：['title',]}
-#         for key in bloglist:
-#             createdAt = bloglist.get(key).get('createdAt')
-#             bloglist_time[createdAt] = bloglist_time.get(createdAt, list())
-#             bloglist_time[createdAt].append(key)
-#         print(bloglist_time)
-#         return jsonify(bloglist_time)
-#     elif args_time == 0 and args_tag == 1:
-#         # { 'tag': ['title,']}
-#         bloglist_tag = dict()
-#         for key in bloglist:
-#             tags = bloglist.get(key).get('tags')
-#             for tag in tags:
-#                 bloglist_tag[tag] = bloglist_tag.get(tag, list())
-#                 bloglist_tag[tag].append(key)
-#         print(bloglist_tag)
-#         return jsonify(bloglist_tag)
-#     else:
-#         return 'Either timeseries or tags'
-
-
-# 返回整个博客页面 or 单个博客文本
 @app.route('/blogpage', methods=['GET', 'POST'])
 def blogpage():
-    # print(CURENT_PATH)
-    filepathList = glob.glob(f'{CURENT_PATH}/blogs/*.md')
-    print(filepathList)
-    bloglist = dict()
-    for filepath in filepathList:
-        ifPublic = filepath.split('--')[0][-1]  # 访问权限
-        title = filepath.split('--')[1]
-        tags = filepath.split('--')[2].split('&')
-        createdAt = filepath.split('--')[3].split('.')[0]
-        createdAt = datetime.datetime.fromtimestamp(int(createdAt))
-        createdAt = str(createdAt).split(' ')[0]
-        editedAt = filepath.split('--')[4].split('.')[0]
-        editedAt = datetime.datetime.fromtimestamp(int(editedAt))
-        editedAt = str(editedAt).split(' ')[0]
-        bloglist[title] = {
-            'filepath': filepath,
-            'ifPublic': ifPublic,
-            'tags': tags,
-            'createdAt': createdAt,
-            'editedAt': editedAt,
-        }
-    print(type(bloglist))
-    # 默认为游客登录
-    secretKey = request.cookies.get('secretKey')
+    bloglist = get_bloglist('title_info')
     user = 'visitor'
     if request.cookies.get('secretKey') == session.get('secretKey'):
         user = 'admin'
-    get_Args = request.args
-    args_title = get_Args.get('title')
+    get_args = request.args
+    args_title = get_args.get('title')
     if args_title in bloglist:
         ip = request.remote_addr
         redis_link.sadd(args_title, ip)
-        # print('sum ip',redis_link.scard(args_title))  # 集合的长度是4
-        # print('members of set',redis_link.smembers(args_title))   # 获取集合中所有的成员
-        if get_Args.get('search') == 'search':
-            args_search = get_Args.get('search')
+        if get_args.get('search') == 'search':
+            args_search = get_args.get('search')
         else:
             args_search = 0
         blogArgs_Dict = bloglist.get(args_title)
-        print(type(blogArgs_Dict))
         blogContent = 'blank'
         if isinstance(blogArgs_Dict, dict):
             blogPath = blogArgs_Dict.get('filepath')
@@ -267,14 +187,20 @@ def blogpage():
                 blogContent = a.join(allRaw)
             createdAt = blogArgs_Dict.get('createdAt')
             editedAt = blogArgs_Dict.get('editedAt')
+            createdAt = datetime.datetime.fromtimestamp(int(createdAt))
+            createdAt = str(createdAt).split(' ')[0]
+            editedAt = datetime.datetime.fromtimestamp(int(editedAt))
+            editedAt = str(editedAt).split(' ')[0]
             tags = blogArgs_Dict.get('tags')
-            # print('blogContent json', json.dumps(blogContent, ensure_ascii=False))
+            tags = str(tags)
+            tags = tags.replace('\'','')
+            tags = tags.replace(',',';')
+            tags = tags.replace('[','')
+            tags = tags.replace(']','')
             blogContent = {
                 '1': blogContent,
             }
-        # print(blogArgs_Dict.get('ifPublic'))
         if blogArgs_Dict.get('ifPublic') == '1':
-            if args_search != 'search':
                 return render_template('blogpage.html',
                                        user=user,
                                        blogTitle=args_title,
@@ -284,15 +210,8 @@ def blogpage():
                                        blogViewCount=redis_link.scard(
                                            args_title),
                                        blogContent=json.dumps(blogContent, ensure_ascii=False))
-            else:
-                searched_blog = {
-                    'args_title': args_title,
-                    'createdAt': createdAt,
-                    'blogContent': blogContent,
-                }
-                return jsonify(searched_blog)
     else:
-        return '404 U CAN NOT SEE'
+        return 'NO RESULT.'
 
 
 @app.route('/writeblog')
@@ -308,9 +227,7 @@ def writeblog(user='visitor'):
 
 @app.route('/input-blog', methods=['GET', 'POST'])
 def getinput(user='visitor'):
-    # request_data = request.get_data()
     getjson = request.get_json()
-    print(getjson)
     b_title = getjson.get('title')
     b_tags = getjson.get('tags').replace('\'', '')
     b_created_at = str(int(time.time()))
@@ -321,7 +238,6 @@ def getinput(user='visitor'):
     else:
         b_ifPublic = '1'
     blogname_list = '--'.join([b_ifPublic, b_title,b_tags, b_created_at, b_edited_at])
-    print(getjson)
     with open(f'{CURENT_PATH}/blogs/{blogname_list}.md', 'w') as fp:
         fp.write(getjson.get('blogContent'))
     return 'ok'
@@ -335,22 +251,22 @@ def editBlog():
     if blog_list.get(b_title):
         src_path = blog_list.get(b_title).get('filepath')
         created_at = blog_list.get(b_title).get('createdAt')
+        b_tags = getjson.get('tags').replace('\'', '')
+        b_created_at = created_at
+        b_edited_at = str(int(time.time()))
+        b_content = getjson.get('blogContent')
+        if getjson.get('ifPublic') == 'Private':
+            b_ifPublic = '0'
+        else:
+            b_ifPublic = '1'
+        blogname_list = '--'.join([b_ifPublic, b_title,b_tags, b_created_at, b_edited_at])
+        with open(f'{CURENT_PATH}/blogs/{blogname_list}.md', 'w') as fp:
+            fp.write(getjson.get('blogContent'))
+        dst_path = f"{CURENT_PATH}/blogsTrash/"
+        shutil.move(src_path, dst_path)
+        return 'ok'
     else:
-        src_path = ''
-    b_tags = getjson.get('tags').replace('\'', '')
-    b_created_at = created_at
-    b_edited_at = str(int(time.time()))
-    b_content = getjson.get('blogContent')
-    if getjson.get('ifPublic') == 'Private':
-        b_ifPublic = '0'
-    else:
-        b_ifPublic = '1'
-    blogname_list = '--'.join([b_ifPublic, b_title,b_tags, b_created_at, b_edited_at])
-    with open(f'{CURENT_PATH}/blogs/{blogname_list}.md', 'w') as fp:
-        fp.write(getjson.get('blogContent'))
-    dst_path = f"{CURENT_PATH}/blogsTrash/"
-    shutil.move(src_path, dst_path)
-    return 'ok'
+        return 'Blog not exists.'
 
 
 @app.route('/search', methods=['GET'])
@@ -360,40 +276,22 @@ def search(user='visitor'):
     request_title = request_args.get('title')
     if request_title in blogList:
         blog_info = blogList.get(request_title)
-        print(blog_info)
         if blog_info.get('ifPublic') == '1':
             return '<a href="javascript:getBlog(\'' + request_title + '\')">' + request_title + '</a>'
         else:
             return 'Permission denied'
     else:
         return f'No blog is named {request_title}'
-    # pattern = f'{CURENT_PATH}/blogs/*.md'
-    # filepath_list = glob.glob(pattern)
-    # bloglist = dict()
-    # for filepath in filepath_list:
-    #     ifPublic = filepath.split('--')[0]  # 访问权限
-    #     title = filepath.split('--')[1]
-    #     tags = filepath.split('--')[2].split('tag')
-    #     createdAt = filepath.split('--')[3]
-    #     editedAt = filepath.split('--')[4]
-    #     bloglist[title] = {
-    #         'filepath': filepath,
-    #         'ifPublic': ifPublic,
-    #         'tags': tags,
-    #         'createdAt': createdAt,
-    #         'editedAt': editedAt,
-    #     }
-    # return 'ok'
 
 
 @app.route('/newcomment', methods=['POST'])
 def new_comment():
-    getjson = request.get_json()
-    blogtitle = getjson.get('title')
-    username = getjson.get('username')
+    request_json = request.get_json()
+    blogtitle = request_json.get('title')
+    username = request_json.get('username')
     if username == '用户名/邮箱/联系方式':
         username = '匿名'
-    usertext = getjson.get('usertext')
+    usertext = request_json.get('usertext')
     userid = str(uuid.uuid4())
     time = str(datetime.datetime.now()).split('.')[0]
     conn = sql.connect("dbname=yang user=yang")
@@ -409,8 +307,8 @@ def new_comment():
 
 @app.route('/getcomments', methods=['GET'])
 def get_comments():
-    get_Args = request.args
-    blogtitle = get_Args.get('blogtitle')
+    get_args = request.args
+    blogtitle = get_args.get('blogtitle')
     conn = sql.connect("dbname=yang user=yang")
     cur = conn.cursor()
     cur.execute(
@@ -423,8 +321,8 @@ def get_comments():
 
 @app.route('/managecomment')
 def managecomment():
-    get_Args = request.args
-    commentID = get_Args.get('id')
+    get_args = request.args
+    commentID = get_args.get('id')
     conn = sql.connect("dbname=yang user=yang")
     cur = conn.cursor()
     sqltext = f"UPDATE newusercomments SET show='false' WHERE id='{commentID}';"

@@ -1,9 +1,9 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8" />
-    <title>Log in success!</title>
-
+  <title>Marked in the browser</title>
   <style>
     @font-face {
       font-family: 'KalamLight';
@@ -101,9 +101,6 @@
     color: white;
 }
   </style>
-  <script>
-    document.cookie="secretKey={{ cookie }}";
-    </script>
 </head>
 
 <body>
@@ -124,10 +121,24 @@
       </div>
     </div>
     <div class="pageblock" id="pagefoot">
-      <dd><a >Permission Valid!</a></dd>
+      <span>Powered by Flask</span>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- <script>
+    function contentToMD(){
+      var ele = document.getElementById('content');
+      rawText = '## About this blog\n\
+### 后端\n\
+基于Python的Flask框架实现(所以叫Fllog)，数据库使用PostgreSQL和Redis分别实现评论和浏览量统计功能，博客内容通过文档管理\n\
+### 前端\n\
+未使用框架，由HTML、CSS和原生JavaScript实现\n\n\
+前后端通信分别由JavaScript的AJAX和Python的Requests库实现';
+      ele.innerHTML = marked(rawText);
+    }
+    contentToMD()
+    // document.getElementById('content').innerHTML =
+    //   marked('# Marked in the browser\n\nRendered by **marked**.');
   </script> -->
 </body>
 

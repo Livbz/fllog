@@ -212,13 +212,15 @@
         <h1><a href="/index" style="text-decoration: none;color: #333">FLLOG</a></h1>
         <hr size=3 color="black">
         <div id="functionBt">
+          {% if user != 'admin' %}
+          <button onclick="login()">Login</button>
+          {% else %}
+          <button onclick="location='/logout'">Logout</button>
+          {% endif %}
           <button  id="toIndex" onclick="location='/index'">归档</button>
           <button id="about" onclick="location='/about'">关于</button>
           <!-- <button id="photo" onclick="location='/photo'">相册</button> -->
         </div>
-        {% if user != 'admin' %}
-        <button onclick="login()">Login</button>
-        {% endif %}
       </div>
       <div id='operation'>
         {% if user == 'admin' %}
@@ -233,7 +235,7 @@
           <h2 id="blogTitle">{{ blogTitle }}</h2>
         </div>
         <div>
-          <span class="blog" id="blogTag">{{ tags }}</span><br>
+          <span class="blog" id="blogTag"><img src="/static/img/tag.png">{{ tags }}</span><br>
           <span id="blogCreatedAt" style="color:dimgray">创建: {{ blogCreatedAt }}</span>
           <span id="blogEditedAt" style="color:dimgray">修改: {{ blogEditedAt }}</span>
           <span id="blogViewCount" style="color:dimgray">访问量：{{ blogViewCount }}</span>
