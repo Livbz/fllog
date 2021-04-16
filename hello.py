@@ -1,9 +1,13 @@
 
+import os
 import json
 import glob
 from flask import g
 import sqlite3 as sql
 from flask import Flask, render_template, request, session, redirect, url_for, escape
+
+
+CURENT_PATH = os.getcwd()  
 app = Flask(__name__)
 # Set the secret key to some random bytes. Keep this really secret!
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -42,7 +46,7 @@ def logout():
 
 @app.route('/blogpage', methods=['GET','POST'])
 def blogpage(user='visitor'):
-    filepathList = glob.glob('/home/admin/fllog/blogs/*.md')
+    filepathList = glob.glob('{CURENT_PATH}/blogs/*.md')
     bloglist = dict()
     for filepath in filepathList:
         ifPublic = filepath.split('--')[0] # 访问权限
@@ -98,7 +102,7 @@ def getinput(user='visitor'):
     blogname_list  = '--'.join([b_ifPublic, b_title, b_tags, b_created_at, b_edited_at])
 
     print(getjson)
-    with open(f'/home/admin/fllog/blogs/{blogname_list}.md', 'w') as fp:
+    with open(f'{CURENT_PATH}/blogs/{blogname_list}.md', 'w') as fp:
         fp.write(getjson.get('blogContent'))
         # con = sql.connect("DB2.db")
         # con.row_factory = sql.Row
@@ -112,7 +116,7 @@ def getinput(user='visitor'):
 
 @app.route('/search', methods=['GET'])
 def search(user='visitor'):
-    pattern = '/home/admin/fllog/blogs/*.md'
+    pattern = '{CURENT_PATH}/blogs/*.md'
     filepath_list =  glob.glob(pattern)
     bloglist = dict()
     for filepath in filepath_list:
