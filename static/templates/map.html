@@ -1,0 +1,1026 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>地图遮罩</title>
+    <style>
+        html,
+        body,
+        #container {
+            margin: 0;
+            height: 100%;
+        }
+
+        #panel {
+            position: fixed;
+            background-color: white;
+            max-height: 90%;
+            overflow-y: auto;
+            top: 10px;
+            right: 10px;
+            width: 280px;
+        }
+
+        #panel .amap-call {
+            background-color: #009cf9;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        #panel .amap-lib-walking {
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            overflow: hidden;
+        }
+
+        .talk_con{
+            position: fixed;
+            z-index:80;
+            top: 10%;
+            width:40%;
+            height:40%;
+            border:1px solid #666;
+            margin:50px auto 0;
+            background:#f9f9f9;
+        }
+        .talk_show{
+            width:95%;
+            height:80%;
+            border:1px solid #666;
+            background:#fff;
+            margin:2px auto 0;
+            overflow:auto;
+        }
+        .talk_input{
+            width:80%;
+            margin:10px auto 0;
+        }
+        .whotalk{
+            width:80px;
+            height:30px;
+            float:left;
+            outline:none;
+        }
+        .talk_word{
+            width:80%;
+            height:26px;
+            padding:0px;
+            float:left;
+            margin-left:10px;
+            outline:none;
+            text-indent:10px;
+        }       
+        .talk_sub{
+            width:56px;
+            height:30px;
+            float:left;
+            margin-left:10px;
+        }
+        .atalk{
+           margin:10px;
+        }
+        .atalk span{
+            display:inline-block;
+            background:#0181cc;
+            border-radius:10px;
+            color:#fff;
+            padding:5px 10px;
+        }
+        .btalk{
+            margin:10px;
+            text-align:right;
+        }
+        .btalk span{
+            display:inline-block;
+            background:#ef8201;
+            border-radius:10px;
+            color:#fff;
+            padding:5px 10px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.15&key=f4e095be087630133e20de9ce76e2fa8"></script>
+    <script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.15&key=f4e095be087630133e20de9ce76e2fa8&plugin=AMap.Walking,AMap.PolyEditor"></script>
+    <script src="https://a.amap.com/jsapi_demos/static/demo-center/js/demoutils.js"></script>
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script src="//a.amap.com/jsapi_demos/static/resource/heatmapData.js"></script>
+</head>
+
+<body onload="getLocation()">
+    <h1 id='banner' align="center">云龙湖景区导游系统</h1>
+    <button onclick="startNavigate()">步行导航</button>
+    <input id='makerGPS'><button onclick='getGps()'>定位</button>
+    <button onclick="getOtherGPS()">获取共享坐标</button>
+    <button onclick="loopGetPolyline()">折线协同</button>
+    <button onclick="getTempoArea()">获取地理围栏</button>
+    {% if role=='guide' %}
+    <button id='newTempoArea' onclick="newTempoArea()">设置地理围栏</button>
+    {% endif %}
+    <button onclick="loopGetGps()">坐标协同</button>
+    <button onclick="removeMakers()">清除Makers</button>
+    <button onclick="Gather()">前往集合点</button>
+    <button onclick="setGather()">设置集合点</button>
+    <button id="btShowTalk">聊天框</button>
+    {% if role=='guide' %}
+    <button id='newPolyline' onclick="drawPloyline()">新增折线</button>
+    {% endif %}
+    <div class="talk_con" id="talkDiv" style="display: none">
+        <div><button id="btCloseTalk">关闭聊天框</button><button onclick = "nowTalkList()">刷新</button></div>
+        <div class="talk_show" id="words">
+        </div>
+        <div class="talk_input">
+            <input type="text" class="talk_word" id="talkwords" style="width: 70%;">
+            <input type="button" value="发送" class="talk_sub" id="talksub">
+        </div>
+    </div>
+    <div id="container"></div>
+    <div class="input-card" style="bottom: 10rem; width: 120px">
+        <button class="btn" onclick="polyEditor.open()" style="margin-bottom: 5px">开始编辑</button>
+        <button class="btn" onclick="polyEditor.close()">结束编辑</button>
+    </div>
+
+    </div>
+    <div class="input-card" style="width: auto;">
+        <div class="input-item">
+            <button class="btn" onclick="heatmap.show()">显示热力图</button>
+        </div>
+        <div class="input-item">
+            <button class="btn" onclick="heatmap.hide()">关闭热力图</button>
+        </div>
+    </div>
+    <!-- <div class="info" style="display: hiden;">
+        <h4 id='status'></h4>
+        <hr>
+        <p id='result'></p>
+        <hr>
+    </div> -->
+    <div id="panel"></div>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script>
+        var destinationLng;
+        var destinationLat;
+        var geofencePath;
+        function tempoAreaInCompute(position, geofence){
+            var isPointInRing = AMap.GeometryUtil.isPointInRing(position, geofence);
+            console.log('isPointInRing?:', isPointInRing)
+            if(isPointInRing == false){
+                $("#banner").css("background",'#ff8787')  
+                log.info('您已经超出活动范围')
+            }else{
+                log.info('活动范围内')
+                $("#banner").css("background",'lightblue')
+            }
+        }
+
+        function getTempoArea() {
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", " https://livebz.fun/tempoErea", true);
+            xmlhttp.setRequestHeader("Content-type", "application/json");
+            xmlhttp.send();
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    let res = xmlhttp.responseText;
+                    res = JSON.parse(res);
+                    let tempoPath = res['tempoErea']
+                    geofencePath = tempoPath
+                    // console.log('tempoPath',tempoPath)
+                    createPolyline('tempoErea', tempoPath)
+                    tempoAreaInCompute([117.155161, 34.231627],geofencePath)
+                    
+                    countPoly++;
+                    // console.log('gettempoErea:',countPoly)
+                }
+            }
+        }
+
+        var tempoEreaCount = 1
+        function newTempoArea() {
+            if (tempoEreaCount) {
+                clickCount = 6;
+                tempoEreaCount = 0;
+                $("#newTempoArea").text('点击完成设置')
+            } else {
+                tempoEreaCount = 1
+                uploadPloyline(clickList)
+                clickCount = 0
+                clickList = []
+                $("#newTempoArea").text('新增地理围栏')
+            }
+        }
+
+
+
+        function setGather(){
+            clickCount = 5
+        }
+        function uploadGather(){
+            $.ajax({
+                    type: "post",
+                    url: "/gather",
+                    data: {
+                    mapid: $.cookie("mapid"),
+                    lng: destinationLng,
+                    lat: destinationLat,
+                    role: $.cookie("role")
+                    },
+                    dataType: "JSON",
+                    success: function(result) {
+                        console.log('集合点设置成功!')
+                        log.info('集合点设置成功!')
+                    }
+                });
+        }
+
+        function Gather(){
+            $.ajax({
+                    type: "get",
+                    url: "/gather",
+                    success: function(result) {
+                        let destination =  result['destination']
+                        console.log('destination', destination)
+                        console.log('globalUserPosition', globalUserPosition)
+                        let startPoint =[117.155161, 34.231627]
+                        routeSearch(globalUserPosition,destination)
+                    }
+                });
+        }
+
+        $("#btShowTalk").click(function () {
+            $("#talkDiv").show();
+            nowTalkList();
+        });
+        $("#btCloseTalk").click(function () {
+            $("#talkDiv").hide();
+        });
+
+        $('#talksub').click(function(){
+            var vals = $('#talkwords').val()
+            if(vals == '')
+            {
+                alert('请输入内容')
+                return
+            }
+            $.ajax({
+                    type: "POST",
+                    url: "/maptalk",
+                    data: {
+                    mapid: $.cookie("mapid"),
+                    words: vals,
+                    role: $.cookie("role")
+                    },
+                    dataType: "JSON",
+                    success: function(result) {
+                        $('#talkwords').val('发送成功！')
+                    }
+                });            
+        });
+        function nowTalkList(){
+            setInterval('getTalkList()',1000)
+        }
+
+        function getTalkList(){
+        $.ajax({
+                type: "GET",
+                url: "/maptalk",
+                success: function(result) {
+                    talkList = result['talkList']
+                    var str = ''
+                    for(key in talkList){
+                        talkSlice = talkList[key]
+                        let name = talkSlice[0]
+                        let time = talkSlice[1]
+                        let words = talkSlice[2]
+                        if(name == $.cookie('username')){
+                            str += '<div class="btalk"><span>' + name + '  ' + time +'：'+words+'</span></div>'
+                        }else{
+                            str += '<div class="atalk"><span>' + name + '  ' + time +'：'+words+'</span></div>'
+                        }
+                    $('#words').html(str )
+                    }    
+                }
+        }); 
+        }
+        
+        var getLocation = function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(displayPosition, locationError);
+            } else {
+                alert('浏览器不支持地理定位。');
+            }
+        }
+        var displayPosition = function (pos) {
+            console.log('GPS ok.')
+        }
+        var locationError = function (error) {
+            switch (error.code) {
+                case error.TIMEOUT:
+                    showError('A timeout occured! Please try again!');
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    showError('We can\'t detect your location. Sorry!');
+                    break;
+                case error.PERMISSION_DENIED:
+                    showError('Please allow geolocation access for this to work.');
+                    break;
+                case error.UNKNOWN_ERROR:
+                    showError('An unknown error occured!');
+                    break;
+            }
+        }
+        var showError = function (error) {
+            alert(error);
+        }
+        // 初始化地图
+        var clickCount = 1;
+        var clickList = [];
+        var globalStart;
+        var globalEnd;
+        var map = new AMap.Map('container', {
+            resizeEnable: true, //是否监控地图容器尺寸变化
+            zoom: 15, //初始化地图层级
+            center: [117.151428, 34.237634] //初始化地图中心点
+        });
+
+        // 添加遮罩
+        var polygonOptions = {
+            map: map,
+            strokeColor: '#97EC71',
+            strokeWeight: 2,
+            fillColor: '#f5f5f5',
+            fillOpacity: 0.95
+        };
+        var pointers = {
+            outer: [
+                [76.526976, 50.087886],
+                [149.827757, 55.199944],
+                [145.257445, -4.879047],
+                [63.167601, -11.486909],
+            ],
+            inner: [
+            [117.128425, 34.235984],
+            [117.130603, 34.239532],
+            [117.128479, 34.236055],
+            [117.130367, 34.238991],
+            [117.130893, 34.240188],
+            [117.131966, 34.241404],
+            [117.132556, 34.242654],
+            [117.132878, 34.243204],
+            [117.133178, 34.243541],
+            [117.133532, 34.243674],
+            [117.134423, 34.24386],
+            [117.135002, 34.244357],
+            [117.135313, 34.244809],
+            [117.135667, 34.245545],
+            [117.135978, 34.245927],
+            [117.136794, 34.246583],
+            [117.137094, 34.246645],
+            [117.138843, 34.246601],
+            [117.13924, 34.247372],
+            [117.13939, 34.247399],
+            [117.140034, 34.247381],
+            [117.140667, 34.247328],
+            [117.140967, 34.247443],
+            [117.141429, 34.247452],
+            [117.145152, 34.247257],
+            [117.149905, 34.247124],
+            [117.150752, 34.247151],
+            [117.15161, 34.247346],
+            [117.152383, 34.247319],
+            [117.15337, 34.247239],
+            [117.153981, 34.247071],
+            [117.154271, 34.246982],
+            [117.155119, 34.246964],
+            [117.155859, 34.246787],
+            [117.156202, 34.246725],
+            [117.159464, 34.246512],
+            [117.161513, 34.24653],
+            [117.162221, 34.246663],
+            [117.162522, 34.246689],
+            [117.167156, 34.246548],
+            [117.167296, 34.249048],
+            [117.167446, 34.24919],
+            [117.167693, 34.249235],
+            [117.174956, 34.249057],
+            [117.176287, 34.248986],
+            [117.176255, 34.246654],
+            [117.177081, 34.246556],
+            [117.176995, 34.246193],
+            [117.175364, 34.246273],
+            [117.175214, 34.246113],
+            [117.176566, 34.245333],
+            [117.177639, 34.245217],
+            [117.179065, 34.245164],
+            [117.179688, 34.245075],
+            [117.180053, 34.245226],
+            [117.180804, 34.246361],
+            [117.181544, 34.24739],
+            [117.18208, 34.247328],
+            [117.183014, 34.248437],
+            [117.182542, 34.248774],
+            [117.184044, 34.250574],
+            [117.184333, 34.250636],
+            [117.184784, 34.250281],
+            [117.185417, 34.24982],
+            [117.185868, 34.249687],
+            [117.186232, 34.249687],
+            [117.186898, 34.249687],
+            [117.186876, 34.249589],
+            [117.186726, 34.249244],
+            [117.186458, 34.249031],
+            [117.186962, 34.248561],
+            [117.186983, 34.247771],
+            [117.187187, 34.247647],
+            [117.186147, 34.245466],
+            [117.183716, 34.242104],
+            [117.183309, 34.241501],
+            [117.183223, 34.241253],
+            [117.184167, 34.239461],
+            [117.182686, 34.237031],
+            [117.181099, 34.23751],
+            [117.177816, 34.232809],
+            [117.179103, 34.232294],
+            [117.177751, 34.231922],
+            [117.176507, 34.231123],
+            [117.175241, 34.231727],
+            [117.174769, 34.231194],
+            [117.174468, 34.231283],
+            [117.174168, 34.230999],
+            [117.173605, 34.231274],
+            [117.169868, 34.227223],
+            [117.169814, 34.227072],
+            [117.169878, 34.226939],
+            [117.16946, 34.22654],
+            [117.169793, 34.226202],
+            [117.169449, 34.225635],
+            [117.167947, 34.225697],
+            [117.167389, 34.22583],
+            [117.165608, 34.227347],
+            [117.16035, 34.222519],
+            [117.159455, 34.222702],
+            [117.158565, 34.222693],
+            [117.157631, 34.222684],
+            [117.156516, 34.222862],
+            [117.15526, 34.223421],
+            [117.154445, 34.223562],
+            [117.153007, 34.223633],
+            [117.151216, 34.224068],
+            [117.150304, 34.224458],
+            [117.149724, 34.224867],
+            [117.14907, 34.226002],
+            [117.14878, 34.226171],
+            [117.148737, 34.226534],
+            [117.148303, 34.226694],
+            [117.146479, 34.227466],
+            [117.146307, 34.227466],
+            [117.145803, 34.227705],
+            [117.145138, 34.227732],
+            [117.145159, 34.226871],
+            [117.145138, 34.226667],
+            [117.14517, 34.226401],
+            [117.145073, 34.225913],
+            [117.144526, 34.225443],
+            [117.144279, 34.225417],
+            [117.144011, 34.225248],
+            [117.142305, 34.225745],
+            [117.14208, 34.225975],
+            [117.142187, 34.226987],
+            [117.142166, 34.227271],
+            [117.141908, 34.227439],
+            [117.14134, 34.227333],
+            [117.140835, 34.226783],
+            [117.14016, 34.226738],
+            [117.139816, 34.226446],
+            [117.139913, 34.226321],
+            [117.140149, 34.226259],
+            [117.140213, 34.225851],
+            [117.140793, 34.225656],
+            [117.14076, 34.225328],
+            [117.140385, 34.225266],
+            [117.140235, 34.225071],
+            [117.140202, 34.224929],
+            [117.138486, 34.22515],
+            [117.138314, 34.225239],
+            [117.137552, 34.226064],
+            [117.137381, 34.226685],
+            [117.137434, 34.22696],
+            [117.138389, 34.229054],
+            [117.138625, 34.229116],
+            [117.139119, 34.229559],
+            [117.139076, 34.230047],
+            [117.138979, 34.230056],
+            [117.138379, 34.229763],
+            [117.138207, 34.229852],
+            [117.137681, 34.22963],
+            [117.137016, 34.230313],
+            [117.137016, 34.230428],
+            [117.137606, 34.230854],
+            [117.13605, 34.23159],
+            [117.132639, 34.233471],
+            [117.130911, 34.23442],
+            [117.129495, 34.235325],
+            [117.128465, 34.235981],
+            ]
+        };
+        var pathArray = [
+            pointers.outer,
+            pointers.inner
+        ];
+        var polygon = new AMap.Polygon(polygonOptions);
+        polygon.setPath(pathArray);
+
+
+        // 添加路径规划
+        var walking = new AMap.Walking({
+            map: map,
+            // panel: "panel"
+        });
+
+        function startNavigate() {
+            clickCount = 3;
+        }
+        map.on('click', function (e) {
+            console.log(e.lnglat.getLng(), e.lnglat.getLat());
+            if(clickCount==1 || clickCount==0 ){
+                tempoAreaInCompute([e.lnglat.getLng(), e.lnglat.getLat()],geofencePath)
+            }
+            if (clickCount == 3) {
+                globalStart = [e.lnglat.getLng(), e.lnglat.getLat()];
+                clickCount--;
+            } else if (clickCount == 2) {
+                globalEnd = [e.lnglat.getLng(), e.lnglat.getLat()];
+                routeSearch(globalStart, globalEnd)
+                clickCount = 1;
+            }
+            if (clickCount == 4) {
+                clickList.push([e.lnglat.getLng(), e.lnglat.getLat()])
+                createPolyline('testLine', clickList)
+            }
+            if(clickCount == 5){
+                x = e.lnglat.getLng();
+                // y = e.lnglat.getLat();
+                destinationLng = e.lnglat.getLng();
+                destinationLat =  e.lnglat.getLat();
+                console.log('x,y:',destinationLng,destinationLat)
+                uploadGather();
+            }
+            if (clickCount == 6) {
+                clickList.push([e.lnglat.getLng(), e.lnglat.getLat()])
+                createPolyline('tempoErea', clickList)
+            }
+        });
+        function routeSearch(start, end) {
+            walking.search(start, end, function (status, result) {
+                if (status === 'complete') {
+                    log.success('绘制步行路线完成')
+                } else {
+                    log.error('步行路线数据查询失败' + result)
+                }
+            });
+        }
+        // routeSearch([117.13636, 34.248951], [117.182494, 34.246078]);
+        var globalUserPosition
+        function getGps() {
+            AMap.plugin('AMap.Geolocation', function () {
+                var geolocation = new AMap.Geolocation({
+                    enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                    timeout: 10000,          //超过10秒后停止定位，默认：5s
+                    buttonPosition: 'RB',    //定位按钮的停靠位置
+                    buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+                    zoomToAccuracy: false,   //定位成功后是否自动调整地图视野到定位点
+
+                });
+                map.addControl(geolocation);
+                geolocation.getCurrentPosition(function (status, result) {
+                    if (status == 'complete') {
+                        onComplete(result)
+                        globalUserPosition = [result.position.getLng(), result.position.getLat()]
+                        var sample = {
+                                "Q": result.position.getLat(),
+                                "R": result.position.getLng(),
+                                "lng": result.position.getLng(),
+                                "lat": result.position.getLat()
+                        }
+                        compute(sample)
+                    } else {
+                        onError(result)
+                    }
+                });
+            });
+        }
+        //解析定位结果
+
+
+        function onComplete(data) {
+            console.log('GPS ok/')
+            // document.getElementById('status').innerHTML = '定位成功'
+            // var str = [];
+            // str.push('定位结果：' + data.position);
+            // str.push('定位类别：' + data.location_type);
+            // if (data.accuracy) {
+            //     str.push('精度：' + data.accuracy + ' 米');
+            // }//如为IP精确定位结果则没有精度信息
+            // str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+            // document.getElementById('result').innerHTML = str.join('<br>');
+        }
+        //解析定位错误信息
+        function onError(data) {
+            document.getElementById('status').innerHTML = '定位失败'
+            document.getElementById('result').innerHTML = '失败原因排查信息:' + data.message;
+        }
+
+
+        // 创建多边形  地理围栏=> geofence
+        var path = [
+            [117.155161, 34.231627],
+            [117.155204, 34.231831],
+            [117.155273, 34.232017],
+            [117.155289, 34.232177],
+            [117.155193, 34.232345],
+            [117.155155, 34.23243],
+            [117.155171, 34.232572],
+            [117.155268, 34.232638],
+            [117.155418, 34.232709],
+            [117.155584, 34.232793],
+            [117.155638, 34.232846],
+            [117.15574, 34.233082],
+            [117.155767, 34.233303],
+            [117.155906, 34.2336],
+            [117.155955, 34.233667],
+            [117.156073, 34.23376],
+            [117.156244, 34.233804],
+            [117.156384, 34.233791],
+            [117.156572, 34.233738],
+            [117.156668, 34.23368],
+            [117.156754, 34.23364],
+            [117.156872, 34.233645],
+            [117.156995, 34.233618],
+            [117.157103, 34.233565],
+            [117.157194, 34.233516],
+            [117.157269, 34.233459],
+            [117.15728, 34.233374],
+            [117.15729, 34.233255],
+            [117.15729, 34.233121],
+            [117.157242, 34.232957],
+            [117.157188, 34.232913],
+            [117.157146, 34.232882],
+            [117.157108, 34.232815],
+            [117.156963, 34.232669],
+            [117.156888, 34.232616],
+            [117.156791, 34.23254],
+            [117.156577, 34.23254],
+            [117.156378, 34.232656],
+            [117.156293, 34.232709],
+            [117.156046, 34.232722],
+            [117.156019, 34.232687],
+            [117.155971, 34.232572],
+            [117.155976, 34.23247],
+            [117.155981, 34.232412],
+            [117.156024, 34.232319],
+            [117.156019, 34.232181],
+            [117.155992, 34.23207],
+            [117.155917, 34.231977],
+            [117.155842, 34.231906],
+            [117.155762, 34.231853],
+            [117.155713, 34.231764],
+            [117.15566, 34.2316],
+            [117.155558, 34.231472],
+            [117.155145, 34.231565],
+        ];
+
+
+        var polygon = new AMap.Polygon({
+            map: map,
+            fillOpacity: 0.4,
+            fillColor: '#ff7878',
+            strokeColor: '#ff7878',
+            strokeWeight:1,
+            path: path
+        });
+
+        function setGeofence(){
+            $.ajax({
+                    type: "POST",
+                    url: "/mapgeofence",
+                    data: {
+                    mapid: $.cookie("mapid"),
+                    path: clickList
+                    },
+                    dataType: "JSON",
+                    success: function(result) {
+                        console.log('Geofence has been uploaded successfully.')
+                    }
+                });  
+        }
+
+        // 全景地图测试点
+
+        var markerPanorama1 = new AMap.Marker({
+            map: map,
+            position: [117.149004, 34.232846]
+        });
+        markerPanorama1.on('click', function (e) {
+            window.open("https://www.livebz.fun/panorama");
+        })
+
+        var markerPanorama2 = new AMap.Marker({
+            map: map,
+            position: [117.149004, 34.233846]
+        });
+        markerPanorama2.on('click', function (e) {
+            window.open("https://www.livebz.fun/panorama");
+        })
+
+        var markerPanorama3 = new AMap.Marker({
+            map: map,
+            position: [117.149304, 34.232846]
+        });
+        markerPanorama3.on('click', function (e) {
+            window.open("https://www.livebz.fun/panorama");
+        })
+
+        var markerPanorama4 = new AMap.Marker({
+            map: map,
+            position: [117.149004, 34.232846]
+        });
+        markerPanorama4.on('click', function (e) {
+            window.open("https://www.livebz.fun/panorama");
+        })
+
+
+        var markerPanorama4 = new AMap.Marker({
+            map: map,
+            position: [117.149504, 34.233794]
+        });
+        markerPanorama4.setLabel({
+            content: '全景预览',
+            offset: new AMap.Pixel(20, 0)
+        });
+
+        markerPanorama4.on('click', function (e) {
+            window.open("https://www.livebz.fun/panorama");
+        })
+        // 地理围栏测试点
+        var markerGeofence = new AMap.Marker({
+            map: map,
+            draggable: true,
+            position: [117.144587, 34.232354]
+        });
+
+        // 地理围栏内外判断
+
+        function compute(position){
+            var isPointInRing = AMap.GeometryUtil.isPointInRing(position, path);
+            console.log(isPointInRing)
+                // markerGeofence.setLabel({
+                //     content: isPointInRing ? '内部' : '外部',
+                //     offset: new AMap.Pixel(20, 0)
+                // });
+        }
+
+        //  compute();
+        // 为marker绑定拖拽事件
+        // markerGeofence.on('dragging', compute)
+        map.setFitView();
+
+        // maker显示刷新
+        var markers = []
+        var overlayGroups;
+
+        function addMarker(gps) {
+            var marker = new AMap.Marker({
+                // icon: "//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png",
+                position: gps,
+                offset: new AMap.Pixel(-13, -30)
+            });
+            markers.push(marker);
+            addOverlayGroup()
+        }
+        
+        function removeMakers(){
+            map.remove(overlayGroups);
+        }
+
+        // 添加覆盖物群组
+        function addOverlayGroup() {
+            if(overlayGroups!=undefined){
+                map.remove(overlayGroups);
+            }
+            overlayGroups = new AMap.OverlayGroup(markers);
+            map.add(overlayGroups);
+        }
+        var countGPS = 0
+        function getOtherGPS() {
+            xmlhttp = new XMLHttpRequest();
+            url = "https://www.livebz.fun/gps";
+            xmlhttp.open("GET", url, true);
+            xmlhttp.setRequestHeader("Content-type", "application/json");
+            xmlhttp.send();
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    let res = xmlhttp.responseText;
+                    res = JSON.parse(res);
+                    markers = []
+                    for (i in res) {
+                        addMarker(res[i])
+                    }
+                    countGPS++;
+                    console.log('countGPS:',countGPS)
+                }
+            }
+        }
+
+
+
+
+        // 热力图
+        var heatmap;
+        var points = [
+            { "lng": 117.140178, "lat": 34.234979, "count": 30 },
+            { "lng": 117.142624, "lat": 34.236238, "count": 30 },
+            { "lng": 117.14301, "lat": 34.233196, "count": 30 },
+            { "lng": 117.14139, "lat": 34.232983, "count": 30 },
+            { "lng": 117.14595, "lat": 34.235538, "count": 30 },
+            { "lng": 117.14525, "lat": 34.235338, "count": 30 },
+            { "lng": 117.14321, "lat": 34.233196, "count": 30 },
+            { "lng": 117.14129, "lat": 34.232983, "count": 30 },
+            { "lng": 117.14525, "lat": 34.235538, "count": 30 },
+            { "lng": 117.14525, "lat": 34.235358, "count": 30 },
+            { "lng": 117.14119, "lat": 34.232943, "count": 30 },
+            { "lng": 117.14515, "lat": 34.235548, "count": 30 },
+            { "lng": 117.14515, "lat": 34.235348, "count": 30 },
+            { "lng": 117.14311, "lat": 34.233146, "count": 30 },
+            { "lng": 117.14119, "lat": 34.232943, "count": 30 },
+            { "lng": 117.14515, "lat": 34.235548, "count": 30 },
+            { "lng": 117.14515, "lat": 34.235348, "count": 30 },
+            { "lng": 117.140778, "lat": 34.234979, "count": 30 },
+            { "lng": 117.142724, "lat": 34.236238, "count": 30 },
+            { "lng": 117.14371, "lat": 34.233196, "count": 30 },
+            { "lng": 117.14179, "lat": 34.232983, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235538, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235338, "count": 30 },
+            { "lng": 117.14371, "lat": 34.233196, "count": 30 },
+            { "lng": 117.14179, "lat": 34.232983, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235538, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235358, "count": 30 },
+            { "lng": 117.14179, "lat": 34.232943, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235548, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235348, "count": 30 },
+            { "lng": 117.14371, "lat": 34.233146, "count": 30 },
+            { "lng": 117.14179, "lat": 34.232943, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235548, "count": 30 },
+            { "lng": 117.14575, "lat": 34.235348, "count": 30 }
+        ];
+        map.plugin(["AMap.Heatmap"], function () {
+            //初始化heatmap对象
+            heatmap = new AMap.Heatmap(map, {
+                radius: 25, //给定半径
+                opacity: [0, 0.8]
+            });
+            //设置数据集：该数据为北京部分“公园”数据
+            heatmap.setDataSet({
+                data: points,
+                max: 100
+            });
+        });
+
+
+        // 绘制折线
+        // 折线的节点坐标数组，每个元素为 AMap.LngLat 对象
+
+        var testPath = [
+            [117.149458, 34.236425],
+            [117.151862, 34.237587],
+            [117.153172, 34.239336],
+            [117.154304, 34.239979],
+            [117.154076, 34.240288],
+            [117.153309, 34.239822]
+        ];
+
+        var polyEditor
+
+        function createPolyline(name, path) {
+            // 创建折线实例
+            formantedPath = []
+            for (let i = 0; i < path.length; i++) {
+                array = path[i]
+                formantedPath.push(new AMap.LngLat(array[0], array[1]))
+            }
+            lineColor  = "#3366FF"
+            if(name == 'tempoErea'){
+                lineColor = '#ff6c6b'
+            }
+            var polyline = new AMap.Polyline({
+                path: formantedPath,
+                isOutline: true,
+                outlineColor: '#ffeeff',
+                borderWeight: 3,
+                strokeColor: lineColor,
+                strokeOpacity: 1,
+                strokeWeight: 6,
+                // 折线样式还支持 'dashed'
+                strokeStyle: "solid",
+                // strokeStyle是dashed时有效
+                strokeDasharray: [10, 5],
+                lineJoin: 'round',
+                lineCap: 'round',
+                zIndex: 50,
+            })
+            // 将折线添加至地图实例
+            map.add(polyline);
+            polyline.setMap(map);
+            polyline.setExtData(name);
+            polyEditor = new AMap.PolyEditor(map, polyline)
+            polyEditor.on('addnode', function (event) {
+                log.info('触发事件：addnode')
+            })
+            polyEditor.on('adjust', function (event) {
+                log.info('触发事件：adjust')
+            })
+            polyEditor.on('removenode', function (event) {
+                log.info('触发事件：removenode')
+            })
+
+            polyEditor.on('end', function (event) {
+                log.info('触发事件： end')
+                pathDictList = event.target.getPath()
+                let name = event.target.getExtData()
+                for (let i = 0; i < pathDictList.length; i++) {
+                    pathDictList[i] = [pathDictList[i].lng, pathDictList[i].lat]
+                }
+                // console.log(pathDictList)
+                uploadPloyline(pathDictList)
+            })
+        }
+
+        // createPolyline(testPath)
+        map.setZoom(15);
+        map.setCenter([117.154973, 34.235778]); //设置地图中心点
+
+        var countPoly =0
+        function getPloyline() {
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", " https://livebz.fun/polyline", true);
+            xmlhttp.setRequestHeader("Content-type", "application/json");
+            xmlhttp.send();
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                    let res = xmlhttp.responseText;
+                    res = JSON.parse(res);
+                    console.log('res',res)
+                    for (key in res) {
+                        let path = res[key]
+                        createPolyline(key, path)
+                    }
+                    countPoly++;
+                    console.log('getPloyline:',countPoly)
+                }
+            }
+        }
+
+
+        function uploadPloyline(path) {
+            polylineName = $.cookie('username')
+            if(clickCount == 6){
+                polylineName = 'tempoErea'
+            }
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", " https://livebz.fun/polyline", true);
+            xmlhttp.setRequestHeader("Content-type", "application/json");
+            xmlhttp.send(JSON.stringify({
+                "name": polylineName,
+                "path": path,
+            }));
+        }
+
+        var drawStartEnd = 1
+        function drawPloyline() {
+            if (drawStartEnd) {
+                clickCount = 4;
+                drawStartEnd = 0;
+                $("#newPolyline").text('折线绘制完成')
+            } else {
+                clickCount = 0
+                drawStartEnd = 1
+                uploadPloyline(clickList)
+                clickList = []
+                $("#newPolyline").text('新增折线')
+            }
+        }
+
+        function loopGetGps(){
+            setInterval("getOtherGPS()",2000);
+        }
+
+        function loopGetPolyline(){
+            setInterval("getPloyline()",2000);
+        }
+    </script>
+</body>
+
+</html>

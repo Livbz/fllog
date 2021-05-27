@@ -1,8 +1,8 @@
 <html>
 <head>
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+    <!-- <link rel="preconnect" href="https://fonts.gstatic.com"> -->
+    <!-- <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css"> -->
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
         document.getElementById('blog').innerHTML = unescape('{{ blogs_index }}');
         document.cookie="secretKey={{ cookie }}";
@@ -215,6 +215,7 @@
         </div>
         <div class="pageblock" id="pagefoot">
             <span>Powered by Flask</span>
+            <a href="https://beian.miit.gov.cn/" target="_blank">蜀ICP备20004042号-1</a>
         </div>
     </div>
 </body>
@@ -244,7 +245,7 @@
     function search() {
         var blogTitle = document.getElementById("searchInput").value;
         xmlhttp = new XMLHttpRequest();
-        url = "http://127.0.0.1:5000/search?title=" + blogTitle;
+        url = "http://www.livebz.fun/search?title=" + blogTitle;
         xmlhttp.open("GET", url, true);
         xmlhttp.setRequestHeader("Content-type", "application/json");
         xmlhttp.send();

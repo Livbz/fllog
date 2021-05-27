@@ -46,7 +46,7 @@
     var edited_at = date;
     var content = document.getElementById("content").value;
     xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("POST", " http://127.0.0.1:5000/input-blog", true);
+    xmlhttp.open("POST", " /input-blog", true);
     xmlhttp.setRequestHeader("Content-type", "application/json");
     xmlhttp.send(JSON.stringify({
       "title": title,

@@ -2,7 +2,7 @@ import os
 import json
 import glob
 import uuid
-import datetime
+from datetime import datetime
 import time
 import os
 import shutil
@@ -10,24 +10,23 @@ import shutil
 import redis
 import psycopg2 as sql
 from flask import g
-from flask import Flask, render_template, request, session, redirect, url_for, escape, jsonify
-
+from flask import Flask, render_template, request, session, redirect, url_for, escape, jsonify,make_response
+from flask_cors import CORS
 
 CURENT_PATH = os.getcwd()
 app = Flask(__name__, template_folder='./static/templates')
+CORS(app, supports_credentials=True)
+
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 AUTHORITY = 'visiter'
 PASSWD = '!,2a'
 IP_dict = dict()
 redis_link = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
-
-
+app.config['DEBUG'] = False
 # 从文件夹中按需求获取博客列表
 def get_bloglist(format):
     filepathList = glob.glob(f'{CURENT_PATH}/blogs/*.md')
     blogDict = dict()
-    tagDict = dict()
-    blogList = list()
     UTC_Title_List = list()
     Tag_title = dict()
     for filepath in filepathList:
@@ -50,7 +49,7 @@ def get_bloglist(format):
         tags = blogInfo['tags']
         for tag in tags:
             titleList = Tag_title.get(tag, list())
-            titleList.append([blogInfo['editedAt'], key])
+            titleList.append([blogInfo['editedAt'], key,blogInfo['ifPublic']])
             titleList.sort(key=lambda y: y[0], reverse=True)
             Tag_title[tag] = titleList
     UTC_Title_List.sort(key=lambda x: x[0], reverse=True)
@@ -83,9 +82,9 @@ def index():
     year_set = set()
     year_list = list()
     for item in UTC_Title_List:
-        # if item[1][1] == '0':
-        #     continue
-        date = datetime.datetime.fromtimestamp(int(item[0]))
+        if item[1][1] == '0':
+            continue
+        date = datetime.fromtimestamp(int(item[0]))
         date = str(date).split(' ')[0]
         year = date.split('-')[0]
         date = date[5:]
@@ -100,26 +99,242 @@ def index():
             title + '\')">' + title + '</a></div></div>'
         blogs_index += segment_date
     blogs_index = blogs_index + '</div>'
+
     blogs_index_tag = "<div id='indexList'>"
+    segment_date = ''
     tag_title_list = get_bloglist('tag_series')
     for tag in tag_title_list:
         blogs_index_tag += f"<div class='yearOrTag'><h3  class='yearOrTagH3'>{tag} ➜ <h3></div>"
         for item in tag_title_list[tag]:
+            if item[2] == '0':
+                continue
             title = item[1]
             date = item[0]
-            date = datetime.datetime.fromtimestamp(int(date))
+            date = datetime.fromtimestamp(int(date))
             date = str(date).split(' ')[0]
             segment_date = '<div class="title tagTitle"><a class="titlelink" href="javascript:getBlog(\'' + \
                 title + '\')">' + title + '</a></div>'
             blogs_index_tag += segment_date
+        segment_date
     blogs_index_tag += '</div>'
     return render_template('index.html', user=user, userID=userID, blogs_index=blogs_index, blogs_index_tag=blogs_index_tag)
 
 
+@app.route('/panorama')
+def panorama():
+    return render_template('panorama.html')
+
+# ---map
+
+@app.route('/map')
+def map():
+    cookie_role = request.cookies.get('role')
+    print("cookie_role:",cookie_role)
+    return render_template('map.html',role=cookie_role)
+
+@app.route('/gps')
+def gps():
+    gps = {
+        1: [117.140178,34.234979],
+        2: [117.142624,34.236238],
+        3: [117.14301,34.233196],
+        4: [117.14139,34.232983],
+        5: [117.14595,34.235538]
+    }
+    res = make_response( jsonify(gps)) # 设置响应体
+    res.headers['Access-Control-Allow-origin'] = "*" # 设置响应头
+    return res
+
+@app.route('/polyline',methods=['GET', 'POST'])
+def polyline():
+    # 接收、更新折线点
+    if request.method == 'GET':
+        # 返回坐标点
+        polyline_names = redis_link.lrange("polyline_names",0,-1) 
+        print('polyline_names',polyline_names)
+        polyline_list = []
+        polyline_dict = dict()
+        if polyline_names:
+            for key in polyline_names:
+                print(key)
+                path_list = str(redis_link.get(key),encoding = "utf-8")
+                path_list = path_list.split(';')
+                print(path_list)
+                for i in range(len(path_list)):
+                    couple = path_list[i].split(',')
+                    couple = [float(couple[0]),float(couple[1])]
+                    path_list[i] = couple
+                polyline_dict[str(key, encoding = "utf-8")] = path_list
+                polyline_list.append(redis_link.get(key))
+                print(redis_link.get(key))
+                print('type : ',type(redis_link.get(key)))
+            return jsonify(polyline_dict)
+        else:
+            return jsonify(polyline_dict)
+    else:
+        # 接收坐标点
+        polyline_name = request.json.get('name')
+        print('polyline_name',polyline_name)
+        polyline_path = request.json.get('path')
+        print('polyline_path',polyline_path)
+        for i in range(len(polyline_path)):
+            polyline_path[i] = str(polyline_path[i][0]) + ',' + str(polyline_path[i][1])
+        str_path = (';').join(polyline_path)
+        str_path = str_path[:-1]
+        print(str_path)
+        if polyline_name != 'tempoErea':
+                redis_link.lpush("polyline_names",polyline_name)
+        redis_link.set(polyline_name,str_path)
+        return 'ok'
+
+@app.route('/tempoErea')
+def tempoErea():
+        polyline_dict = {}
+        polyline_list = []
+        path_list = str(redis_link.get('tempoErea'),encoding = "utf-8")
+        path_list = path_list.split(';')
+        print(path_list)
+        for i in range(len(path_list)):
+            couple = path_list[i].split(',')
+            couple = [float(couple[0]),float(couple[1])]
+            path_list[i] = couple
+        polyline_dict['tempoErea'] = path_list
+        polyline_list.append(redis_link.get('tempoErea'))
+        print(redis_link.get('tempoErea'))
+        print('type : ',type(redis_link.get('tempoErea')))
+        return jsonify(polyline_dict)
+
+
+@app.route('/mapindex')
+def mapindex():
+    return render_template('loginon.html')
+
+@app.route('/maplogon',methods=['POST'])
+def maplogon():
+    res = {}
+    password = request.form['password']
+    username = request.form['username']
+    phone = request.form['phone']
+    role = request.form['role']
+    if not(password and  username and phone and role):
+        res['check'] = 0
+        res['info'] = '信息不全'
+        return jsonify(res)
+    conn = sql.connect("dbname=flaskcomment user=yang")
+    cur = conn.cursor()
+    sqltext = f"INSERT INTO mapusers(username,password,phone,role) VALUES('{username}','{password}',{phone},'{role}');"
+    cur.execute(sqltext)
+    conn.commit()
+    cur.close()
+    conn.close()
+    res['check'] = 1
+    res['info'] = '注册成功'
+    print(sqltext)
+    return  jsonify(res)
+
+
+@app.route('/maplogin',methods=['POST'])
+def maplogin():
+    print(request.form['password'])
+    print(request.form['username'])
+    print(request.form['role'])
+    res = {}
+    password = request.form['password']
+    username = request.form['username']
+    # role = request.form['role']
+    conn = sql.connect("dbname=flaskcomment user=yang")
+    cur = conn.cursor()
+    sqltext = f"SELECT * FROM mapusers WHERE username = '{username}'"
+    cur.execute(sqltext)
+    sqlres = cur.fetchone()
+    print(sqlres)
+    if not sqlres:
+        res['check'] = 0
+        return jsonify(res)
+    db_password = sqlres[1]
+    db_role = sqlres[3]
+    conn.commit()
+    cur.close()
+    conn.close()
+    uid = uuid.uuid4()
+    uid = str(uid)
+    redis_link.set(uid,username)
+    if db_role == "visitor":
+        if db_password == password:
+            res['check'] = 1
+            res['cookie'] = uid
+            res['role'] = "visitor"
+        else:
+            res['check'] = 0
+        return jsonify(res)
+    else:
+        if db_password == password:
+            res['check'] = 1
+            res['cookie'] = uid
+            res['role'] = "guide"
+        else:
+            res['check'] = 0
+        return jsonify(res)
+
+
+@app.route('/maptalk',methods=['GET', 'POST'])
+def maptalk():
+    if request.method == 'POST':
+        print(request.form)
+        cookie = request.form['mapid']
+        words =  request.form['words']
+        redis_name = str(redis_link.get(cookie),encoding = "utf-8")
+        print('redis_name',redis_name)
+        if redis_name:
+            time = datetime.now().strftime("%H:%M:%S")
+            wordslist = redis_name + '@#' + time + '@#' + words
+            print(wordslist)
+            redis_link.lpush("maptalk",wordslist)
+            return 'ok'
+        return 'no name'
+    else:
+        res = {}
+        talk_list = redis_link.lrange("maptalk",0,-1) 
+        for i in range(len(talk_list)):
+            talk_slice = str(talk_list[i],encoding = "utf-8")
+            talk_list[i] = talk_slice.split('@#')
+        talk_list.reverse()
+        res['talkList'] = talk_list
+        return jsonify(res)
+
+
+@app.route('/gather',methods=['GET','POST'])
+def gather():
+        if request.method == 'GET':
+            destination = redis_link.get('destination')
+            gatherlng = float(str(redis_link.get('gatherlng'),encoding = "utf-8"))
+            gatherlat = float(str(redis_link.get('gatherlat'),encoding = "utf-8"))
+            res = {}
+            res['destination'] = [gatherlng, gatherlat]
+            return jsonify(res)
+        else:
+            print('destination', request.form)
+            if request.form['lng']:
+                gatherlng = request.form['lng']
+                gatherlat = request.form['lat']
+                redis_link.set('gatherlng', gatherlng)
+                redis_link.set('gatherlat', gatherlat)
+                return 'ok'
+            return 'bad args'
+
+
+@app.route('/mapgeofence',methods=['GET','POST'])
+def mapgeofence():
+    if request.method == 'GET':
+        res = {}
+        res
+        # 使用polyline 代替 polygon
+#---map end
+
 @app.route('/hello')
 def hello():
     secretKey = request.cookies.get('secretKey')
-    if request.cookies.get('secretKey') == session['secretKey']:
+    if request.cookies.get('secretKey') == session.get('secretKey'):
         user = 'admin'
     else:
         user = 'visitozzzr'
@@ -130,7 +345,7 @@ def hello():
 def admin():
     secretKey = request.cookies.get('secretKey')
     if request.cookies.get('secretKey'):
-        if request.cookies.get('secretKey') == session['secretKey']:
+        if request.cookies.get('secretKey') == session.get('secretKey'):
             user = 'admin'
             return render_template('admin.html', user=user, cookie=secretKey)
         return redirect(url_for('login'))
@@ -166,7 +381,7 @@ def about():
 def blogpage():
     bloglist = get_bloglist('title_info')
     user = 'visitor'
-    if request.cookies.get('secretKey') == session.get('secretKey'):
+    if request.cookies.get('secretKey') == session.get('secretKey') and session.get('secretKey') != None:
         user = 'admin'
     get_args = request.args
     args_title = get_args.get('title')
@@ -187,9 +402,9 @@ def blogpage():
                 blogContent = a.join(allRaw)
             createdAt = blogArgs_Dict.get('createdAt')
             editedAt = blogArgs_Dict.get('editedAt')
-            createdAt = datetime.datetime.fromtimestamp(int(createdAt))
+            createdAt = datetime.fromtimestamp(int(createdAt))
             createdAt = str(createdAt).split(' ')[0]
-            editedAt = datetime.datetime.fromtimestamp(int(editedAt))
+            editedAt = datetime.fromtimestamp(int(editedAt))
             editedAt = str(editedAt).split(' ')[0]
             tags = blogArgs_Dict.get('tags')
             tags = str(tags)
@@ -200,7 +415,7 @@ def blogpage():
             blogContent = {
                 '1': blogContent,
             }
-        if blogArgs_Dict.get('ifPublic') == '1' or request.cookies.get('secretKey') == session['secretKey']:
+        if blogArgs_Dict.get('ifPublic') == '1' or request.cookies.get('secretKey') == session.get('secretKey'):
                 return render_template('blogpage.html',
                                        user=user,
                                        blogTitle=args_title,
@@ -218,7 +433,7 @@ def blogpage():
 @app.route('/writeblog')
 def writeblog(user='visitor'):
     if request.cookies.get('secretKey'):
-        if request.cookies.get('secretKey') == session['secretKey']:
+        if request.cookies.get('secretKey') == session.get('secretKey'):
             user = 'admin'
             return render_template('blog-write.html', user=user)
         return redirect(url_for('login'))
@@ -294,8 +509,8 @@ def new_comment():
         username = '匿名'
     usertext = request_json.get('usertext')
     userid = str(uuid.uuid4())
-    time = str(datetime.datetime.now()).split('.')[0]
-    conn = sql.connect("dbname=yang user=yang")
+    time = str(datetime.now()).split('.')[0]
+    conn = sql.connect("dbname=flaskcomment user=yang")
     cur = conn.cursor()
     if usertext != '':
         cur.execute(
@@ -305,12 +520,11 @@ def new_comment():
     conn.close()
     return 'ok'
 
-
 @app.route('/getcomments', methods=['GET'])
 def get_comments():
     get_args = request.args
     blogtitle = get_args.get('blogtitle')
-    conn = sql.connect("dbname=yang user=yang")
+    conn = sql.connect("dbname=flaskcomment user=yang")
     cur = conn.cursor()
     cur.execute(
         f"SELECT * FROM newusercomments WHERE blogtitle='{blogtitle}' AND show='true';")
@@ -324,7 +538,7 @@ def get_comments():
 def managecomment():
     get_args = request.args
     commentID = get_args.get('id')
-    conn = sql.connect("dbname=yang user=yang")
+    conn = sql.connect("dbname=flaskcomment user=yang")
     cur = conn.cursor()
     sqltext = f"UPDATE newusercomments SET show='false' WHERE id='{commentID}';"
     cur.execute(sqltext)
@@ -332,3 +546,6 @@ def managecomment():
     cur.close()
     conn.close()
     return 'ok'
+
+
+app.run(host='0.0.0.0', port=443, ssl_context=('./static/ssl/5607143_www.livebz.fun.pem', './static/ssl/5607143_www.livebz.fun.key')) 
