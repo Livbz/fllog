@@ -36,70 +36,121 @@
             overflow: hidden;
         }
 
-        .talk_con{
+        .talk_con {
             position: fixed;
-            z-index:80;
+            z-index: 80;
             top: 10%;
-            width:40%;
-            height:40%;
-            border:1px solid #666;
-            margin:50px auto 0;
-            background:#f9f9f9;
+            width: 40%;
+            height: 40%;
+            border: 3px solid lightblue;
+            border-radius: 6px;
+            margin: 50px auto 0;
+            background: white;
+
         }
-        .talk_show{
-            width:95%;
-            height:80%;
-            border:1px solid #666;
-            background:#fff;
-            margin:2px auto 0;
-            overflow:auto;
+
+        .talk_show {
+            width: 95%;
+            height: 80%;
+            border: 3px solid lightblue;
+            border-radius: 4px;
+            background: #fff;
+            margin: 2px auto 0;
+            overflow: ;
         }
-        .talk_input{
-            width:80%;
-            margin:10px auto 0;
+
+        .talk_input {
+            width: 80%;
+            margin: 10px auto 0;
         }
-        .whotalk{
-            width:80px;
-            height:30px;
-            float:left;
-            outline:none;
+
+        .whotalk {
+            width: 80px;
+            height: 30px;
+            float: left;
+            outline: none;
         }
-        .talk_word{
-            width:80%;
-            height:26px;
-            padding:0px;
-            float:left;
-            margin-left:10px;
-            outline:none;
-            text-indent:10px;
-        }       
-        .talk_sub{
-            width:56px;
-            height:30px;
-            float:left;
-            margin-left:10px;
+
+        .talk_word {
+            width: 80%;
+            height: 26px;
+            padding: 0px;
+            float: left;
+            margin-left: 10px;
+            outline: none;
+            text-indent: 10px;
         }
-        .atalk{
-           margin:10px;
+
+        .talk_sub {
+            width: 56px;
+            height: 30px;
+            float: left;
+            margin-left: 10px;
         }
-        .atalk span{
-            display:inline-block;
-            background:#0181cc;
-            border-radius:10px;
-            color:#fff;
-            padding:5px 10px;
+
+        .atalk {
+            margin: 10px;
         }
-        .btalk{
-            margin:10px;
-            text-align:right;
+
+        .atalk span {
+            display: inline-block;
+            background: #0181cc;
+            border-radius: 10px;
+            color: #fff;
+            padding: 5px 10px;
         }
-        .btalk span{
-            display:inline-block;
-            background:#ef8201;
-            border-radius:10px;
-            color:#fff;
-            padding:5px 10px;
+
+        .btalk {
+            margin: 10px;
+            text-align: right;
         }
+
+        .btalk span {
+            display: inline-block;
+            background: #ef8201;
+            border-radius: 10px;
+            color: #fff;
+            padding: 5px 10px;
+        }
+        #newTempoArea {
+            background-color: white;
+        }
+
+        /* 半透明的遮罩层 */
+        .shadow {
+            background: #000;
+            filter: alpha(opacity=70);
+            /* IE的透明度 */
+            opacity: 0.5;
+            /* 透明度 */
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 965;
+            /* 此处的图层要大于页面 */
+        }
+
+        .login-box {
+            text-align: center;
+            width: 500px;
+            height: 350px;
+            border-radius: 10px;
+            /*border: 3px solid gainsboro;*/
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: #e1f9ff;
+            -webkit-box-shadow: #666 0 0 6px;
+            -moz-box-shadow: #666 0 0 6px;
+            box-shadow: #fff8e7 0 0 6px 6px;
+            z-index: 996;
+            /* 此处的图层要大于遮罩图层 */
+        }
+
     </style>
     <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
     <script type="text/javascript"
@@ -113,39 +164,98 @@
 
 <body onload="getLocation()">
     <h1 id='banner' align="center">云龙湖景区导游系统</h1>
-    <button onclick="startNavigate()">步行导航</button>
-    <input id='makerGPS'><button onclick='getGps()'>定位</button>
-    <button onclick="getOtherGPS()">获取共享坐标</button>
-    <button onclick="loopGetPolyline()">折线协同</button>
-    <button onclick="getTempoArea()">获取地理围栏</button>
-    {% if role=='guide' %}
-    <button id='newTempoArea' onclick="newTempoArea()">设置地理围栏</button>
-    {% endif %}
-    <button onclick="loopGetGps()">坐标协同</button>
-    <button onclick="removeMakers()">清除Makers</button>
-    <button onclick="Gather()">前往集合点</button>
-    <button onclick="setGather()">设置集合点</button>
-    <button id="btShowTalk">聊天框</button>
-    {% if role=='guide' %}
-    <button id='newPolyline' onclick="drawPloyline()">新增折线</button>
-    {% endif %}
+
+
+    <div style="display: none" class="shadow" id="shadow"></div>
+    <div style="display: none" id="login-box" class="login-box">
+        <div class="close-btn">
+            <h3 align='center'>导游系统登录</h3>
+        </div>
+        <div class="input-item">
+            <label for="username">用户名</label>
+            <input type="text" name="username" id="username" placeholder="用户名">
+        </div>
+        <div class="input-item">
+            <label for="password">密　码</label>
+            <input type="password" name="password" id="password" placeholder="密码">
+        </div>
+        <div class="role">
+            <input type="radio" name="role" value="visitor">游客</input>
+            <input type="radio" name="role" value="guide">导游</input>
+        </div>
+        <div class="input-item">
+            <button class="btn" style="background-color:white" type="button" id="login-btn">登　录</button>
+            <button class="btn" style="background-color:white" id="logon-link">注 册</button>
+            <button class="btn" style="background-color:white" id="close-login-btn">close</button>
+            
+        </div>
+    </div>
+    <div style="display: none" id="logon-box" class="login-box">
+        <div class="close-btn">
+            <h3 align='center'>导游系统注册</h3>
+        </div>
+        <div class="input-item">
+            <label for="logonUsername">用户名</label>
+            <input type="text" name="logonUsername" id="logonUsername" placeholder="用户名">
+        </div>
+        <div class="input-item">
+            <label for="logonPassword">密　码</label>
+            <input type="text" name="logonPassword" id="logonPassword" placeholder="密码">
+        </div>
+        <div class="input-item">
+            <label for="logonPhone">手机</label>
+            <input type="text" name="logonPhone" id="logonPhone" placeholder="手机号码">
+        </div>
+        <div class="logonRole">
+            <input type="radio" name="logonRole" value="visitor">游客</input>
+            <input type="radio" name="logonRole" value="guide">导游</input>
+        </div>
+        <div class="input-item">
+            <button class="btn" style="background-color:white" type="button" id="logon-btn">注册</button>
+            <button class="btn" style="background-color:white" id="close-login-btn-2">close</button>
+        </div>
+    </div>
+
+
+
     <div class="talk_con" id="talkDiv" style="display: none">
-        <div><button id="btCloseTalk">关闭聊天框</button><button onclick = "nowTalkList()">刷新</button></div>
+        <div><button id="btCloseTalk" class="btn" sytle="background-color:white">关闭聊天框</button><button class="btn" onclick="nowTalkList()">刷新</button></div>
         <div class="talk_show" id="words">
         </div>
         <div class="talk_input">
             <input type="text" class="talk_word" id="talkwords" style="width: 70%;">
-            <input type="button" value="发送" class="talk_sub" id="talksub">
+            <input type="button" class="btn" value="发送" class="talk_sub" id="talksub">
         </div>
     </div>
     <div id="container"></div>
     <div class="input-card" style="bottom: 10rem; width: 120px">
-        <button class="btn" onclick="polyEditor.open()" style="margin-bottom: 5px">开始编辑</button>
-        <button class="btn" onclick="polyEditor.close()">结束编辑</button>
+        <button id="login-link" class="btn" onclick="showlogin()">登录</button>
+        <button class="btn" onclick="startNavigate()">步行导航</button>
+        <button class="btn" onclick='getGps()'>定位</button>
+        <button class="btn" onclick="getOtherGPS()">获取共享坐标</button>
+        <button class="btn" onclick="loopGetPolyline()">折线协同</button>
+        <button class="btn" onclick="getTempoArea()">获取地理围栏</button>
+        {% if role=='guide' %}
+        <button class="btn" id='newTempoArea' onclick="newTempoArea()">设置地理围栏</button>
+        {% endif %}
+        <!-- <div class="input-card" style="bottom: 10rem; width: 120px">
+        </div> -->
+        {% if role=='guide' %}
+        <button class="btn" id='newPolyline' onclick="drawPloyline()">新增折线</button>
+        {% endif %}
+        <button class="btn"  onclick='polyEditor.open()'>开始编辑</button>
+        <button class="btn" onclick="polyEditor.close()" style="margin-bottom: 5px">结束编辑</button>
+        <button class="btn" onclick="loopGetGps()">坐标协同</button>
+        <button class="btn" onclick="removeMakers()">清除Makers</button>
+        <button class="btn" onclick="Gather()">前往集合点</button>
+        <button class="btn" onclick="setGather()">设置集合点</button>
+        <button class="btn" id="btShowTalk">聊天框</button>
+        <button class="btn" onclick="heatmap.show()">显示热力图</button>
+        <button class="btn" onclick="heatmap.hide()">关闭热力图</button>
     </div>
 
     </div>
-    <div class="input-card" style="width: auto;">
+    <!-- <div class="input-card" style="width: auto;">
         <div class="input-item">
             <button class="btn" onclick="heatmap.show()">显示热力图</button>
         </div>
@@ -153,28 +263,143 @@
             <button class="btn" onclick="heatmap.hide()">关闭热力图</button>
         </div>
     </div>
-    <!-- <div class="info" style="display: hiden;">
+    <div class="info" style="display: hiden;">
         <h4 id='status'></h4>
         <hr>
         <p id='result'></p>
-        <hr>
-    </div> -->
-    <div id="panel"></div>
+        <hr>hide -->
     <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="//cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script>
+
+        //登录，点击登录显示登录框
+        function showlogin(){
+        $("#login-link").click(function () {
+            $("#logon-box").hide();
+            $("#login-box").show();
+            $("#shadow").show();
+            $("#role").show();
+        });}
+        //关闭登录框，点击关闭按钮关闭
+        $("#close-login-btn").click(function () {
+            $("#login-box").hide();
+            $("#shadow").hide();
+
+        });
+
+        $("#close-login-btn-2").click(function () {
+            $("#login-box").show();
+            $("#logon-box").hide();
+            $("#login-box").hide();
+            $("#shadow").hide();
+        });
+
+        $("#role").toggle(
+            function(){
+            // $("#role").text( "游客");
+                console.log("toggle 1");
+            },
+            function(){
+            // $("#role").text("导游");
+                console.log("toggle 2");
+            }
+            // function(){
+            // $("#role").text() ;}
+            );
+            $("#logon-link").click(function () {
+            $("#login-box").hide();
+            $("#logon-box").show();
+            $("#shadow").show();
+            });
+
+
+
+        $(function () {
+            $('#login-btn').click(function () {
+                username = $('#username').val();
+                password = $('#password').val();
+                $.ajax({
+                    type: "POST",
+                    url: "/maplogin",
+                    data: {
+                    username: $("#username").val(),
+                    password: $("#password").val(),
+                    role: $('input:radio[name="role"]:checked').val()
+                    },
+                    dataType: "JSON",
+                    success: function(result) {
+                        console.log(result.check)    
+                        if(result.check == 1){
+                            $.cookie('role', result.role, { expires: 7 });
+                            $.cookie('mapid', result.cookie, { expires: 7 });
+                            $.cookie('username', $("#username").val(), { expires: 7 });
+                            window.location.href = "/map"; 
+                            showlogin();
+                        }else{ 
+                            window.alert(result.info);
+                        }
+                    }
+                });
+            });
+        });
+
+        
+        $(function () {
+            $('#logon-btn').click(function () {
+                username = $('#logonUsername').val();
+                password = $('#logonPassword').val();
+                $.ajax({
+                    type: "POST",
+                    url: "/maplogon",
+                    data: {
+                    username: $("#logonUsername").val(),
+                    password: $("#logonPassword").val(),
+                    phone: $("#logonPhone").val(),
+                    role: $('input:radio[name="logonRole"]:checked').val()
+                    },
+                    dataType: "JSON",
+                    success: function(result) {
+                        console.log(result.check)    
+                        if(result.check == 1){
+                            window.alert('注册成功！');
+                        }else{ 
+                            window.alert('账号或密码错误！')
+                        }
+                    }
+                });
+            });
+        });
+
+
         var destinationLng;
         var destinationLat;
-        var geofencePath;
-        function tempoAreaInCompute(position, geofence){
+        var geofencePath = [];
+        function tempoAreaInCompute(position, geofence) {
             var isPointInRing = AMap.GeometryUtil.isPointInRing(position, geofence);
             console.log('isPointInRing?:', isPointInRing)
-            if(isPointInRing == false){
-                $("#banner").css("background",'#ff8787')  
+            markerGeofence.setLabel({
+                content: isPointInRing ? '内部' : '外部',
+                offset: new AMap.Pixel(20, 0)
+            });
+            if (isPointInRing == false) {
+                $("#banner").css("background", '#ff8787')
                 log.info('您已经超出活动范围')
-            }else{
+                alert('您已经超出活动范围')
+            } else {
                 log.info('活动范围内')
-                $("#banner").css("background",'lightblue')
+                $("#banner").css("background", 'lightblue')
+            }
+        }
+
+        function tempoAreaInCompute2(position, geofence) {
+            var isPointInRing = AMap.GeometryUtil.isPointInRing(position, geofence);
+            console.log('tempoAreaInCompute2isPointInRing?:', isPointInRing)
+            if (isPointInRing == true) {
+                // $("#banner").css("background", '#ff8787')
+                log.info('您进入了禁区，请立即退出')
+                alert('您进入了禁区，请立即退出')
+            } else {
+                log.info('地理围栏范围外')
             }
         }
 
@@ -191,8 +416,8 @@
                     geofencePath = tempoPath
                     // console.log('tempoPath',tempoPath)
                     createPolyline('tempoErea', tempoPath)
-                    tempoAreaInCompute([117.155161, 34.231627],geofencePath)
-                    
+                    tempoAreaInCompute(markerGeofence.getPosition( ), geofencePath)
+
                     countPoly++;
                     // console.log('gettempoErea:',countPoly)
                 }
@@ -216,39 +441,40 @@
 
 
 
-        function setGather(){
+        function setGather() {
             clickCount = 5
         }
-        function uploadGather(){
+        function uploadGather() {
             $.ajax({
-                    type: "post",
-                    url: "/gather",
-                    data: {
+                type: "post",
+                url: "/gather",
+                data: {
                     mapid: $.cookie("mapid"),
                     lng: destinationLng,
                     lat: destinationLat,
                     role: $.cookie("role")
-                    },
-                    dataType: "JSON",
-                    success: function(result) {
-                        console.log('集合点设置成功!')
-                        log.info('集合点设置成功!')
-                    }
-                });
+                },
+                dataType: "JSON",
+                success: function (result) {
+                    console.log('集合点设置成功!')
+                    log.info('集合点设置成功!')
+                }
+            });
         }
 
-        function Gather(){
+        function Gather() {
             $.ajax({
-                    type: "get",
-                    url: "/gather",
-                    success: function(result) {
-                        let destination =  result['destination']
-                        console.log('destination', destination)
-                        console.log('globalUserPosition', globalUserPosition)
-                        let startPoint =[117.155161, 34.231627]
-                        routeSearch(globalUserPosition,destination)
-                    }
-                });
+                type: "get",
+                url: "/gather",
+                success: function (result) {
+                    let destination = result['destination']
+                    console.log('destination', destination)
+                    console.log('globalUserPosition', globalUserPosition)
+                    // let startPoint = [117.144587, 34.232354]
+                    let startPoint = markerGeofence.getPosition( )
+                    routeSearch(startPoint, destination)
+                }
+            });
         }
 
         $("#btShowTalk").click(function () {
@@ -259,54 +485,53 @@
             $("#talkDiv").hide();
         });
 
-        $('#talksub').click(function(){
+        $('#talksub').click(function () {
             var vals = $('#talkwords').val()
-            if(vals == '')
-            {
+            if (vals == '') {
                 alert('请输入内容')
                 return
             }
             $.ajax({
-                    type: "POST",
-                    url: "/maptalk",
-                    data: {
+                type: "POST",
+                url: "/maptalk",
+                data: {
                     mapid: $.cookie("mapid"),
                     words: vals,
                     role: $.cookie("role")
-                    },
-                    dataType: "JSON",
-                    success: function(result) {
-                        $('#talkwords').val('发送成功！')
-                    }
-                });            
+                },
+                dataType: "JSON",
+                success: function (result) {
+                    $('#talkwords').val('发送成功！')
+                }
+            });
         });
-        function nowTalkList(){
-            setInterval('getTalkList()',1000)
+        function nowTalkList() {
+            setInterval('getTalkList()', 1000)
         }
 
-        function getTalkList(){
-        $.ajax({
+        function getTalkList() {
+            $.ajax({
                 type: "GET",
                 url: "/maptalk",
-                success: function(result) {
+                success: function (result) {
                     talkList = result['talkList']
                     var str = ''
-                    for(key in talkList){
+                    for (key in talkList) {
                         talkSlice = talkList[key]
                         let name = talkSlice[0]
                         let time = talkSlice[1]
                         let words = talkSlice[2]
-                        if(name == $.cookie('username')){
-                            str += '<div class="btalk"><span>' + name + '  ' + time +'：'+words+'</span></div>'
-                        }else{
-                            str += '<div class="atalk"><span>' + name + '  ' + time +'：'+words+'</span></div>'
+                        if (name == $.cookie('username')) {
+                            str += '<div class="btalk"><span>' + name + '  ' + time + '：' + words + '</span></div>'
+                        } else {
+                            str += '<div class="atalk"><span>' + name + '  ' + time + '：' + words + '</span></div>'
                         }
-                    $('#words').html(str )
-                    }    
+                        $('#words').html(str)
+                    }
                 }
-        }); 
+            });
         }
-        
+
         var getLocation = function () {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(displayPosition, locationError);
@@ -363,168 +588,168 @@
                 [63.167601, -11.486909],
             ],
             inner: [
-            [117.128425, 34.235984],
-            [117.130603, 34.239532],
-            [117.128479, 34.236055],
-            [117.130367, 34.238991],
-            [117.130893, 34.240188],
-            [117.131966, 34.241404],
-            [117.132556, 34.242654],
-            [117.132878, 34.243204],
-            [117.133178, 34.243541],
-            [117.133532, 34.243674],
-            [117.134423, 34.24386],
-            [117.135002, 34.244357],
-            [117.135313, 34.244809],
-            [117.135667, 34.245545],
-            [117.135978, 34.245927],
-            [117.136794, 34.246583],
-            [117.137094, 34.246645],
-            [117.138843, 34.246601],
-            [117.13924, 34.247372],
-            [117.13939, 34.247399],
-            [117.140034, 34.247381],
-            [117.140667, 34.247328],
-            [117.140967, 34.247443],
-            [117.141429, 34.247452],
-            [117.145152, 34.247257],
-            [117.149905, 34.247124],
-            [117.150752, 34.247151],
-            [117.15161, 34.247346],
-            [117.152383, 34.247319],
-            [117.15337, 34.247239],
-            [117.153981, 34.247071],
-            [117.154271, 34.246982],
-            [117.155119, 34.246964],
-            [117.155859, 34.246787],
-            [117.156202, 34.246725],
-            [117.159464, 34.246512],
-            [117.161513, 34.24653],
-            [117.162221, 34.246663],
-            [117.162522, 34.246689],
-            [117.167156, 34.246548],
-            [117.167296, 34.249048],
-            [117.167446, 34.24919],
-            [117.167693, 34.249235],
-            [117.174956, 34.249057],
-            [117.176287, 34.248986],
-            [117.176255, 34.246654],
-            [117.177081, 34.246556],
-            [117.176995, 34.246193],
-            [117.175364, 34.246273],
-            [117.175214, 34.246113],
-            [117.176566, 34.245333],
-            [117.177639, 34.245217],
-            [117.179065, 34.245164],
-            [117.179688, 34.245075],
-            [117.180053, 34.245226],
-            [117.180804, 34.246361],
-            [117.181544, 34.24739],
-            [117.18208, 34.247328],
-            [117.183014, 34.248437],
-            [117.182542, 34.248774],
-            [117.184044, 34.250574],
-            [117.184333, 34.250636],
-            [117.184784, 34.250281],
-            [117.185417, 34.24982],
-            [117.185868, 34.249687],
-            [117.186232, 34.249687],
-            [117.186898, 34.249687],
-            [117.186876, 34.249589],
-            [117.186726, 34.249244],
-            [117.186458, 34.249031],
-            [117.186962, 34.248561],
-            [117.186983, 34.247771],
-            [117.187187, 34.247647],
-            [117.186147, 34.245466],
-            [117.183716, 34.242104],
-            [117.183309, 34.241501],
-            [117.183223, 34.241253],
-            [117.184167, 34.239461],
-            [117.182686, 34.237031],
-            [117.181099, 34.23751],
-            [117.177816, 34.232809],
-            [117.179103, 34.232294],
-            [117.177751, 34.231922],
-            [117.176507, 34.231123],
-            [117.175241, 34.231727],
-            [117.174769, 34.231194],
-            [117.174468, 34.231283],
-            [117.174168, 34.230999],
-            [117.173605, 34.231274],
-            [117.169868, 34.227223],
-            [117.169814, 34.227072],
-            [117.169878, 34.226939],
-            [117.16946, 34.22654],
-            [117.169793, 34.226202],
-            [117.169449, 34.225635],
-            [117.167947, 34.225697],
-            [117.167389, 34.22583],
-            [117.165608, 34.227347],
-            [117.16035, 34.222519],
-            [117.159455, 34.222702],
-            [117.158565, 34.222693],
-            [117.157631, 34.222684],
-            [117.156516, 34.222862],
-            [117.15526, 34.223421],
-            [117.154445, 34.223562],
-            [117.153007, 34.223633],
-            [117.151216, 34.224068],
-            [117.150304, 34.224458],
-            [117.149724, 34.224867],
-            [117.14907, 34.226002],
-            [117.14878, 34.226171],
-            [117.148737, 34.226534],
-            [117.148303, 34.226694],
-            [117.146479, 34.227466],
-            [117.146307, 34.227466],
-            [117.145803, 34.227705],
-            [117.145138, 34.227732],
-            [117.145159, 34.226871],
-            [117.145138, 34.226667],
-            [117.14517, 34.226401],
-            [117.145073, 34.225913],
-            [117.144526, 34.225443],
-            [117.144279, 34.225417],
-            [117.144011, 34.225248],
-            [117.142305, 34.225745],
-            [117.14208, 34.225975],
-            [117.142187, 34.226987],
-            [117.142166, 34.227271],
-            [117.141908, 34.227439],
-            [117.14134, 34.227333],
-            [117.140835, 34.226783],
-            [117.14016, 34.226738],
-            [117.139816, 34.226446],
-            [117.139913, 34.226321],
-            [117.140149, 34.226259],
-            [117.140213, 34.225851],
-            [117.140793, 34.225656],
-            [117.14076, 34.225328],
-            [117.140385, 34.225266],
-            [117.140235, 34.225071],
-            [117.140202, 34.224929],
-            [117.138486, 34.22515],
-            [117.138314, 34.225239],
-            [117.137552, 34.226064],
-            [117.137381, 34.226685],
-            [117.137434, 34.22696],
-            [117.138389, 34.229054],
-            [117.138625, 34.229116],
-            [117.139119, 34.229559],
-            [117.139076, 34.230047],
-            [117.138979, 34.230056],
-            [117.138379, 34.229763],
-            [117.138207, 34.229852],
-            [117.137681, 34.22963],
-            [117.137016, 34.230313],
-            [117.137016, 34.230428],
-            [117.137606, 34.230854],
-            [117.13605, 34.23159],
-            [117.132639, 34.233471],
-            [117.130911, 34.23442],
-            [117.129495, 34.235325],
-            [117.128465, 34.235981],
+                [117.128425, 34.235984],
+                [117.130603, 34.239532],
+                [117.128479, 34.236055],
+                [117.130367, 34.238991],
+                [117.130893, 34.240188],
+                [117.131966, 34.241404],
+                [117.132556, 34.242654],
+                [117.132878, 34.243204],
+                [117.133178, 34.243541],
+                [117.133532, 34.243674],
+                [117.134423, 34.24386],
+                [117.135002, 34.244357],
+                [117.135313, 34.244809],
+                [117.135667, 34.245545],
+                [117.135978, 34.245927],
+                [117.136794, 34.246583],
+                [117.137094, 34.246645],
+                [117.138843, 34.246601],
+                [117.13924, 34.247372],
+                [117.13939, 34.247399],
+                [117.140034, 34.247381],
+                [117.140667, 34.247328],
+                [117.140967, 34.247443],
+                [117.141429, 34.247452],
+                [117.145152, 34.247257],
+                [117.149905, 34.247124],
+                [117.150752, 34.247151],
+                [117.15161, 34.247346],
+                [117.152383, 34.247319],
+                [117.15337, 34.247239],
+                [117.153981, 34.247071],
+                [117.154271, 34.246982],
+                [117.155119, 34.246964],
+                [117.155859, 34.246787],
+                [117.156202, 34.246725],
+                [117.159464, 34.246512],
+                [117.161513, 34.24653],
+                [117.162221, 34.246663],
+                [117.162522, 34.246689],
+                [117.167156, 34.246548],
+                [117.167296, 34.249048],
+                [117.167446, 34.24919],
+                [117.167693, 34.249235],
+                [117.174956, 34.249057],
+                [117.176287, 34.248986],
+                [117.176255, 34.246654],
+                [117.177081, 34.246556],
+                [117.176995, 34.246193],
+                [117.175364, 34.246273],
+                [117.175214, 34.246113],
+                [117.176566, 34.245333],
+                [117.177639, 34.245217],
+                [117.179065, 34.245164],
+                [117.179688, 34.245075],
+                [117.180053, 34.245226],
+                [117.180804, 34.246361],
+                [117.181544, 34.24739],
+                [117.18208, 34.247328],
+                [117.183014, 34.248437],
+                [117.182542, 34.248774],
+                [117.184044, 34.250574],
+                [117.184333, 34.250636],
+                [117.184784, 34.250281],
+                [117.185417, 34.24982],
+                [117.185868, 34.249687],
+                [117.186232, 34.249687],
+                [117.186898, 34.249687],
+                [117.186876, 34.249589],
+                [117.186726, 34.249244],
+                [117.186458, 34.249031],
+                [117.186962, 34.248561],
+                [117.186983, 34.247771],
+                [117.187187, 34.247647],
+                [117.186147, 34.245466],
+                [117.183716, 34.242104],
+                [117.183309, 34.241501],
+                [117.183223, 34.241253],
+                [117.184167, 34.239461],
+                [117.182686, 34.237031],
+                [117.181099, 34.23751],
+                [117.177816, 34.232809],
+                [117.179103, 34.232294],
+                [117.177751, 34.231922],
+                [117.176507, 34.231123],
+                [117.175241, 34.231727],
+                [117.174769, 34.231194],
+                [117.174468, 34.231283],
+                [117.174168, 34.230999],
+                [117.173605, 34.231274],
+                [117.169868, 34.227223],
+                [117.169814, 34.227072],
+                [117.169878, 34.226939],
+                [117.16946, 34.22654],
+                [117.169793, 34.226202],
+                [117.169449, 34.225635],
+                [117.167947, 34.225697],
+                [117.167389, 34.22583],
+                [117.165608, 34.227347],
+                [117.16035, 34.222519],
+                [117.159455, 34.222702],
+                [117.158565, 34.222693],
+                [117.157631, 34.222684],
+                [117.156516, 34.222862],
+                [117.15526, 34.223421],
+                [117.154445, 34.223562],
+                [117.153007, 34.223633],
+                [117.151216, 34.224068],
+                [117.150304, 34.224458],
+                [117.149724, 34.224867],
+                [117.14907, 34.226002],
+                [117.14878, 34.226171],
+                [117.148737, 34.226534],
+                [117.148303, 34.226694],
+                [117.146479, 34.227466],
+                [117.146307, 34.227466],
+                [117.145803, 34.227705],
+                [117.145138, 34.227732],
+                [117.145159, 34.226871],
+                [117.145138, 34.226667],
+                [117.14517, 34.226401],
+                [117.145073, 34.225913],
+                [117.144526, 34.225443],
+                [117.144279, 34.225417],
+                [117.144011, 34.225248],
+                [117.142305, 34.225745],
+                [117.14208, 34.225975],
+                [117.142187, 34.226987],
+                [117.142166, 34.227271],
+                [117.141908, 34.227439],
+                [117.14134, 34.227333],
+                [117.140835, 34.226783],
+                [117.14016, 34.226738],
+                [117.139816, 34.226446],
+                [117.139913, 34.226321],
+                [117.140149, 34.226259],
+                [117.140213, 34.225851],
+                [117.140793, 34.225656],
+                [117.14076, 34.225328],
+                [117.140385, 34.225266],
+                [117.140235, 34.225071],
+                [117.140202, 34.224929],
+                [117.138486, 34.22515],
+                [117.138314, 34.225239],
+                [117.137552, 34.226064],
+                [117.137381, 34.226685],
+                [117.137434, 34.22696],
+                [117.138389, 34.229054],
+                [117.138625, 34.229116],
+                [117.139119, 34.229559],
+                [117.139076, 34.230047],
+                [117.138979, 34.230056],
+                [117.138379, 34.229763],
+                [117.138207, 34.229852],
+                [117.137681, 34.22963],
+                [117.137016, 34.230313],
+                [117.137016, 34.230428],
+                [117.137606, 34.230854],
+                [117.13605, 34.23159],
+                [117.132639, 34.233471],
+                [117.130911, 34.23442],
+                [117.129495, 34.235325],
+                [117.128465, 34.235981],
             ]
         };
         var pathArray = [
@@ -542,18 +767,23 @@
         });
 
         function startNavigate() {
-            clickCount = 3;
+            clickCount = 2;
         }
         map.on('click', function (e) {
             console.log(e.lnglat.getLng(), e.lnglat.getLat());
-            if(clickCount==1 || clickCount==0 ){
-                tempoAreaInCompute([e.lnglat.getLng(), e.lnglat.getLat()],geofencePath)
+            if (clickCount == 1 || clickCount == 0) {
+                if(geofencePath != []){
+                    console.log(geofencePath)
+                tempoAreaInCompute([e.lnglat.getLng(), e.lnglat.getLat()], geofencePath)
+
+                }
             }
             if (clickCount == 3) {
                 globalStart = [e.lnglat.getLng(), e.lnglat.getLat()];
                 clickCount--;
             } else if (clickCount == 2) {
                 globalEnd = [e.lnglat.getLng(), e.lnglat.getLat()];
+                let globalStart = markerGeofence.getPosition( );
                 routeSearch(globalStart, globalEnd)
                 clickCount = 1;
             }
@@ -561,12 +791,17 @@
                 clickList.push([e.lnglat.getLng(), e.lnglat.getLat()])
                 createPolyline('testLine', clickList)
             }
-            if(clickCount == 5){
+            if (clickCount == 5) {
                 x = e.lnglat.getLng();
                 // y = e.lnglat.getLat();
                 destinationLng = e.lnglat.getLng();
-                destinationLat =  e.lnglat.getLat();
-                console.log('x,y:',destinationLng,destinationLat)
+                destinationLat = e.lnglat.getLat();
+                console.log('x,y:', destinationLng, destinationLat)
+                var gatherPoint = new AMap.Marker({
+                map: map,
+                icon: "//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png",
+                position: [destinationLng, destinationLat]
+                });
                 uploadGather();
             }
             if (clickCount == 6) {
@@ -601,10 +836,10 @@
                         onComplete(result)
                         globalUserPosition = [result.position.getLng(), result.position.getLat()]
                         var sample = {
-                                "Q": result.position.getLat(),
-                                "R": result.position.getLng(),
-                                "lng": result.position.getLng(),
-                                "lat": result.position.getLat()
+                            "Q": result.position.getLat(),
+                            "R": result.position.getLng(),
+                            "lng": result.position.getLng(),
+                            "lat": result.position.getLat()
                         }
                         compute(sample)
                     } else {
@@ -699,23 +934,23 @@
             fillOpacity: 0.4,
             fillColor: '#ff7878',
             strokeColor: '#ff7878',
-            strokeWeight:1,
+            strokeWeight: 1,
             path: path
         });
 
-        function setGeofence(){
+        function setGeofence() {
             $.ajax({
-                    type: "POST",
-                    url: "/mapgeofence",
-                    data: {
+                type: "POST",
+                url: "/mapgeofence",
+                data: {
                     mapid: $.cookie("mapid"),
                     path: clickList
-                    },
-                    dataType: "JSON",
-                    success: function(result) {
-                        console.log('Geofence has been uploaded successfully.')
-                    }
-                });  
+                },
+                dataType: "JSON",
+                success: function (result) {
+                    console.log('Geofence has been uploaded successfully.')
+                }
+            });
         }
 
         // 全景地图测试点
@@ -768,24 +1003,21 @@
         // 地理围栏测试点
         var markerGeofence = new AMap.Marker({
             map: map,
+            icon: "https://a.amap.com/jsapi_demos/static/resource/img/user.png",
             draggable: true,
             position: [117.144587, 34.232354]
         });
 
         // 地理围栏内外判断
 
-        function compute(position){
+        function compute(position) {
             var isPointInRing = AMap.GeometryUtil.isPointInRing(position, path);
-            console.log(isPointInRing)
-                // markerGeofence.setLabel({
-                //     content: isPointInRing ? '内部' : '外部',
-                //     offset: new AMap.Pixel(20, 0)
-                // });
+            console.log('compute isPointInRing:',isPointInRing)
         }
 
         //  compute();
         // 为marker绑定拖拽事件
-        // markerGeofence.on('dragging', compute)
+        markerGeofence.on('dragging', compute(markerGeofence.getPosition()))
         map.setFitView();
 
         // maker显示刷新
@@ -801,14 +1033,14 @@
             markers.push(marker);
             addOverlayGroup()
         }
-        
-        function removeMakers(){
+
+        function removeMakers() {
             map.remove(overlayGroups);
         }
 
         // 添加覆盖物群组
         function addOverlayGroup() {
-            if(overlayGroups!=undefined){
+            if (overlayGroups != undefined) {
                 map.remove(overlayGroups);
             }
             overlayGroups = new AMap.OverlayGroup(markers);
@@ -830,7 +1062,7 @@
                         addMarker(res[i])
                     }
                     countGPS++;
-                    console.log('countGPS:',countGPS)
+                    console.log('countGPS:', countGPS)
                 }
             }
         }
@@ -911,8 +1143,8 @@
                 array = path[i]
                 formantedPath.push(new AMap.LngLat(array[0], array[1]))
             }
-            lineColor  = "#3366FF"
-            if(name == 'tempoErea'){
+            lineColor = "#3366FF"
+            if (name == 'tempoErea') {
                 lineColor = '#ff6c6b'
             }
             var polyline = new AMap.Polyline({
@@ -936,6 +1168,8 @@
             polyline.setMap(map);
             polyline.setExtData(name);
             polyEditor = new AMap.PolyEditor(map, polyline)
+
+
             polyEditor.on('addnode', function (event) {
                 log.info('触发事件：addnode')
             })
@@ -962,7 +1196,7 @@
         map.setZoom(15);
         map.setCenter([117.154973, 34.235778]); //设置地图中心点
 
-        var countPoly =0
+        var countPoly = 0
         function getPloyline() {
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", " https://livebz.fun/polyline", true);
@@ -972,13 +1206,13 @@
                 if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                     let res = xmlhttp.responseText;
                     res = JSON.parse(res);
-                    console.log('res',res)
+                    console.log('res', res)
                     for (key in res) {
                         let path = res[key]
                         createPolyline(key, path)
                     }
                     countPoly++;
-                    console.log('getPloyline:',countPoly)
+                    console.log('getPloyline:', countPoly)
                 }
             }
         }
@@ -986,7 +1220,7 @@
 
         function uploadPloyline(path) {
             polylineName = $.cookie('username')
-            if(clickCount == 6){
+            if (clickCount == 6) {
                 polylineName = 'tempoErea'
             }
             xmlhttp = new XMLHttpRequest();
@@ -1013,13 +1247,19 @@
             }
         }
 
-        function loopGetGps(){
-            setInterval("getOtherGPS()",2000);
+        function loopGetGps() {
+            setInterval("getOtherGPS()", 2000);
         }
+        var loopGetPloyline;
+        function loopGetPolyline() {
+            loopGetPloyline = setInterval("getPloyline()", 1000);
+        }
+        
+        $('#banner').click(function () {
+            clearInterval(loopGetPloyline);
+            console.log('stop polyline loop')
+        })
 
-        function loopGetPolyline(){
-            setInterval("getPloyline()",2000);
-        }
     </script>
 </body>
 

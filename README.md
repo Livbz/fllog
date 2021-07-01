@@ -1,3 +1,8 @@
+# How to start this project
+1. activate the virtual environment : workon env37
+2. add environment variable: source .env
+3. start python script: python hello.py
+
 # fllog
 A blog project based on flask, which is created to be a python-friendly and progressive blog framework.
 

@@ -1,17 +1,19 @@
+#coding:utf-8
 import os
 import json
 import glob
 import uuid
 from datetime import datetime
 import time
-import os
 import shutil
 
 import redis
 import psycopg2 as sql
 from flask import g
-from flask import Flask, render_template, request, session, redirect, url_for, escape, jsonify,make_response
+from flask import Flask, render_template, Response, request, session, redirect, url_for, escape, jsonify,make_response
 from flask_cors import CORS
+from flask_talisman import Talisman
+
 
 CURENT_PATH = os.getcwd()
 app = Flask(__name__, template_folder='./static/templates')
@@ -19,7 +21,7 @@ CORS(app, supports_credentials=True)
 
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 AUTHORITY = 'visiter'
-PASSWD = '!,2a'
+PASSWD = '1234'
 IP_dict = dict()
 redis_link = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
 app.config['DEBUG'] = False
@@ -119,10 +121,32 @@ def index():
     blogs_index_tag += '</div>'
     return render_template('index.html', user=user, userID=userID, blogs_index=blogs_index, blogs_index_tag=blogs_index_tag)
 
+@app.route('/document')
+def document():
+    fileNames=[]
+    obj = os.walk("./static/document")
+    for root,dirname,filename in obj:
+        fileNames.append(filename)
+    return render_template("document.html",fileNames=fileNames[0])
 
-@app.route('/panorama')
-def panorama():
-    return render_template('panorama.html')
+@app.route("/download/<filename>")
+def download(filename):
+    # 流式读取
+    def send_file():
+        store_path = "./static/document/"+filename
+        with open(store_path, 'rb') as targetfile:
+            while 1:
+                data = targetfile.read(20 * 1024 * 1024)  # 每次读取20M
+                if not data:
+                    break
+                yield data
+
+    response = Response(send_file(), content_type='application/octet-stream')
+    response.headers["Content-disposition"] = 'attachment; filename=%s' % filename  # 如果不加上这行代码，导致下图的问题
+    return response
+
+
+
 
 # ---map
 
@@ -182,7 +206,11 @@ def polyline():
         str_path = (';').join(polyline_path)
         str_path = str_path[:-1]
         print(str_path)
-        if polyline_name != 'tempoErea':
+        if redis_link.exists(polyline_name):
+            key_exists = 0
+        else:
+            key_exists = 1
+        if polyline_name != 'tempoErea' and key_exists:
                 redis_link.lpush("polyline_names",polyline_name)
         redis_link.set(polyline_name,str_path)
         return 'ok'
@@ -237,7 +265,7 @@ def maplogon():
 def maplogin():
     print(request.form['password'])
     print(request.form['username'])
-    print(request.form['role'])
+    # print(request.form['role'])
     res = {}
     password = request.form['password']
     username = request.form['username']
